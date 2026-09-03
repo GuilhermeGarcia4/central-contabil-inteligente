@@ -1,0 +1,46 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { ConversationMessage, ConversationRow, FinanceService } from '../finance/finance.service';
+interface AssistantSource { title:string;url:string|null;isOfficial:boolean;lastVerifiedAt:string|null }
+interface Related { title:string;slug:string }
+interface AssistantAnswer { answer:string;sources:AssistantSource[];confidence:'high'|'medium'|'low';requiresProfessionalReview:boolean;relatedArticles:Related[];suggestedCalculators:Related[];calculation:any;disclaimer:string|null }
+interface AssistantStatus {mode:'external'|'local-grounded';externalChatConfigured:boolean;message:string}
+type ViewState='idle'|'loading'|'success'|'no-source'|'error'|'rate-limited';
+@Component({imports:[FormsModule,RouterLink],template:`<section class="page assistant">
+  <span class="eyebrow">CENTRAL CONTÁBIL IA</span><h1>Como posso ajudar?</h1><p class="lead">Respostas fundamentadas no conteúdo verificado da plataforma e cálculos executados por ferramentas determinísticas.</p>@if(assistantStatus();as status){<p class="assistant-mode" [class.local]="!status.externalChatConfigured"><b>{{status.externalChatConfigured?'IA externa configurada':'Modo local ativo'}}</b> · {{status.message}}</p>}
+  <div class="assistant-layout">
+    <aside class="conversations" aria-label="Histórico de conversas">
+      <button class="new" (click)="newConversation()">+ Nova conversa</button>
+      @if(conversations().length){<ul>@for(conv of conversations();track conv.id){<li><button class="conv" [class.active]="conv.id===activeId()" (click)="openConversation(conv.id)"><span>{{conv.title}}</span><small>{{conv.messageCount}} msg</small></button><button class="del" [attr.aria-label]="'Excluir '+conv.title" (click)="deleteConversation(conv.id)">×</button></li>}</ul><button class="clear" (click)="clearHistory()">Limpar histórico</button>}@else{<p class="empty">Nenhuma conversa ainda.</p>}
+    </aside>
+    <div class="assistant-main">
+      <form class="assistant-form" (ngSubmit)="ask()"><label for="assistant-question">Digite sua dúvida</label><textarea id="assistant-question" name="question" [(ngModel)]="question" maxlength="1000" placeholder="Ex.: Quanto recebo de 13º com salário de 3000 e 6 meses?"></textarea><button class="primary" [disabled]="state()==='loading'||question.trim().length<3">{{state()==='loading'?'Consultando...':'Perguntar'}}</button></form>
+      <div class="suggestions" aria-label="Sugestões">@for(item of suggestions;track item){<button type="button" (click)="useSuggestion(item)">{{item}}</button>}</div>
+      @if(state()==='loading'){<div class="notice" role="status">Consultando fontes verificadas e ferramentas...</div>}
+      @if(state()==='rate-limited'){<div class="notice error">Limite temporário atingido. Aguarde um minuto.</div>}
+      @if(state()==='error'){<div class="notice error">O assistente está temporariamente indisponível. Você ainda pode utilizar a <a routerLink="/buscar">pesquisa</a> e as calculadoras.</div>}
+      @if(messages().length){<div class="thread">@for(msg of messages();track $index){<div class="msg" [class.user]="msg.role==='user'"><div class="bubble">{{msg.content}}</div></div>}</div>}
+      @if(result();as r){<article class="assistant-answer"><h2>Resposta</h2><div class="prose">{{r.answer}}</div><span class="confidence">Confiança: {{confidenceLabel(r.confidence)}}</span>@if(r.sources.length){<section class="sources"><h2>Fontes consultadas</h2>@for(source of r.sources;track source.url){<a [href]="source.url" target="_blank" rel="noopener"><b>{{source.title}}</b> {{source.isOfficial?'· Fonte oficial':''}}</a>}</section>}@if(r.relatedArticles.length){<section><h2>Conteúdos relacionados</h2>@for(item of r.relatedArticles;track item.slug){<a class="related" [routerLink]="['/artigos',item.slug]">{{item.title}}</a>}</section>}@if(r.suggestedCalculators.length){<section><h2>Calculadora relacionada</h2>@for(item of r.suggestedCalculators;track item.slug){<a class="related" [routerLink]="['/calculadoras',item.slug]">{{item.title}}</a>}</section>}@if(r.disclaimer){<small class="disclaimer">{{r.disclaimer}}</small>}</article>}
+    </div>
+  </div>
+</section>`,styles:[`.assistant{max-width:1000px}.assistant-layout{display:grid;grid-template-columns:250px 1fr;gap:24px;margin-top:8px}.conversations{border:1px solid var(--line);border-radius:var(--radius);padding:16px;background:#fff;align-self:start}.conversations .new{width:100%;background:var(--navy);color:var(--accent);border:0;border-radius:10px;padding:10px;cursor:pointer;font-weight:700}.conversations ul{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:6px}.conversations li{display:flex;align-items:center;gap:6px}.conversations .conv{flex:1;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px;cursor:pointer;display:grid}.conversations .conv span{font-size:13px;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.conversations .conv small{color:var(--muted);font-size:11px}.conversations .conv.active{border-color:var(--navy);background:#eef4fb}.conversations .del{border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px}.conversations .clear{margin-top:12px;width:100%;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px;cursor:pointer;color:var(--danger)}.conversations .empty{color:var(--muted);font-size:13px}.assistant-main{min-width:0}.assistant-form{margin:0 0 14px}.assistant-form textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:12px;padding:16px;resize:vertical}.assistant-form .primary{margin-top:12px}.suggestions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}.suggestions button{border:1px solid var(--line);background:white;border-radius:999px;padding:9px 14px;cursor:pointer}.thread{display:grid;gap:10px;margin-bottom:20px}.msg{display:flex}.msg.user{justify-content:flex-end}.bubble{max-width:80%;padding:12px 16px;border-radius:14px;background:#eef4fb;color:var(--navy);white-space:pre-wrap}.msg.user .bubble{background:var(--navy);color:var(--accent)}.assistant-answer{border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}.confidence{display:inline-block;margin:20px 0;padding:6px 10px;border-radius:999px;background:#e8f4f2;color:var(--green)}.related{display:block;color:var(--blue);margin:8px 0}.disclaimer{display:block;margin-top:24px;color:var(--muted)}@media(max-width:760px){.assistant-layout{grid-template-columns:1fr}}`]})
+export class AssistantComponent {
+  private http=inject(HttpClient);private finance=inject(FinanceService);
+  question='';state=signal<ViewState>('idle');result=signal<AssistantAnswer|null>(null);assistantStatus=signal<AssistantStatus|null>(null);
+  conversations=signal<ConversationRow[]>([]);activeId=signal<string|null>(null);messages=signal<ConversationMessage[]>([]);
+  suggestions=['Como funcionam as férias?','Ultrapassei o limite MEI','Como calcular juros compostos?','Como foi meu mês?','Para onde meu dinheiro foi?'];
+  constructor(){this.loadConversations();this.http.get<AssistantStatus>('/api/v1/assistant/status').subscribe({next:x=>this.assistantStatus.set(x),error:()=>{}})}
+  loadConversations(){this.finance.conversations().subscribe({next:x=>this.conversations.set(x),error:()=>{}})}
+  newConversation(){this.finance.createConversation('').subscribe({next:x=>{this.activeId.set(x.id);this.messages.set([]);this.result.set(null);this.loadConversations()},error:()=>{}})}
+  openConversation(id:string){this.activeId.set(id);this.result.set(null);this.finance.conversation(id).subscribe({next:x=>this.messages.set(x),error:()=>{}})}
+  deleteConversation(id:string){this.finance.deleteConversation(id).subscribe({next:()=>{if(this.activeId()===id){this.activeId.set(null);this.messages.set([])}this.loadConversations()},error:()=>{}})}
+  clearHistory(){this.finance.clearConversations().subscribe({next:()=>{this.activeId.set(null);this.messages.set([]);this.conversations.set([])},error:()=>{}})}
+  useSuggestion(value:string){this.question=value;this.ask()}
+  ask(){const question=this.question.trim();if(question.length<3)return;this.state.set('loading');this.result.set(null);
+    const proceed=(conversationId:string|null)=>{this.http.post<AssistantAnswer>('/api/v1/assistant/ask',{question,conversationId}).subscribe({next:value=>{this.result.set(value);this.state.set(value.sources.length===0&&!value.calculation?'no-source':'success');if(conversationId){this.messages.set([...this.messages(),{role:'user',content:question,sourcesJson:null,createdAt:new Date().toISOString()},{role:'assistant',content:value.answer,sourcesJson:null,createdAt:new Date().toISOString()}]);this.loadConversations()}},error:(error:HttpErrorResponse)=>this.state.set(error.status===429?'rate-limited':'error')})};
+    if(this.activeId()){proceed(this.activeId())}else{this.finance.createConversation(question).subscribe({next:x=>{this.activeId.set(x.id);proceed(x.id)},error:()=>proceed(null)})}
+  }
+  confidenceLabel(value:string){return value==='high'?'Alta':value==='medium'?'Média':'Baixa'}
+}

@@ -1,0 +1,50 @@
+
+> central-contabil-web@0.1.0 start
+> ng serve --host localhost --port 4200
+
+> Building...
+√ Building...
+Initial chunk files | Names                          |  Raw size
+main.js             | main                           |  14.61 kB | 
+styles.css          | styles                         |  12.96 kB | 
+chunk-BACDXYZI.js   | -                              |   3.59 kB | 
+chunk-VUJOFXKG.js   | -                              | 987 bytes | 
+
+                    | Initial total                  |  32.15 kB
+
+Lazy chunk files    | Names                          |  Raw size
+chunk-JPXGNG76.js   | finance-dashboard-component    |  96.12 kB | 
+chunk-GMZD4EHV.js   | finance-transactions-component |  44.29 kB | 
+chunk-WVA7NPBV.js   | finance-scheduled-component    |  41.76 kB | 
+chunk-M5V3OOHH.js   | assistant-component            |  33.63 kB | 
+chunk-Y3ZEBRHF.js   | -                              |  31.74 kB | 
+chunk-DGIJCSGU.js   | finance-cards-component        |  31.40 kB | 
+chunk-3G6SNJ3R.js   | finance-debts-component        |  30.93 kB | 
+chunk-37WFKSNX.js   | finance-accounts-component     |  30.58 kB | 
+chunk-WEDHWI3L.js   | finance-import-component       |  29.07 kB | 
+chunk-FGM6GNHZ.js   | finance-reserve-component      |  27.33 kB | 
+chunk-EGWO5ZT2.js   | unified-search-component       |  26.70 kB | 
+chunk-PMFQS23P.js   | home-component                 |  23.89 kB | 
+chunk-KEAOSUYP.js   | finance-preferences-component  |  22.50 kB | 
+chunk-U3MVIZMP.js   | admin-component                |  20.28 kB | 
+chunk-IKEZP3WW.js   | finance-goals-component        |  19.77 kB | 
+...and 17 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [4.074 seconds] - 2026-08-30T00:33:17.040Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+21:33:17 [vite] (client) Re-optimizing dependencies because vite config has changed
+  ➜  Local:   http://localhost:4200/
+21:33:18 [vite] (client) [optimizer] bundling dependencies...
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names               | Raw size
+main.js             | main                | 14.61 kB | 
+
+Lazy chunk files    | Names               | Raw size
+chunk-RMBSE7IO.js   | assistant-component | 33.64 kB | 
+
+Application bundle generation complete. [1.506 seconds] - 2026-08-30T00:37:41.381Z
+
+Component update sent to client(s).

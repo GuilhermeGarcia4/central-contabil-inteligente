@@ -1,0 +1,524 @@
+Usando as configurações de inicialização de backend\src\CentralContabil.Api\Properties\launchSettings.json...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+          "MigrationId" character varying(150) NOT NULL,
+          "ProductVersion" character varying(32) NOT NULL,
+          CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (22ms) [Parameters=[@normalizedName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedName
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedName
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Categories" AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Calculators" AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Articles" AS a)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedEmail='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DisplayName", a."Email", a."EmailConfirmed", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM central."AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @normalizedEmail
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedRoleName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedRoleName
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p='?' (DbType = Guid), @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", a."RoleId"
+      FROM central."AspNetUserRoles" AS a
+      WHERE a."UserId" = @p AND a."RoleId" = @p1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."CategoryId", a."ContentVersion", a."CreatedAt", a."Jurisdiction", a."LastReviewedAt", a."NeedsReviewAt", a."PublishedAt", a."ReviewStatus", a."SimpleContent", a."Slug", a."Status", a."Summary", a."TechnicalContent", a."Title", a."UpdatedAt", a."ValidFrom", a."ValidUntil", s0."ArticleId", s0."SourceId", s0."Id", s0."IsActive", s0."IsOfficial", s0."LastVerifiedAt", s0."Name", s0."PublishedAt", s0."Publisher", s0."RetrievedAt", s0."SourceType", s0."Url"
+      FROM central."Articles" AS a
+      LEFT JOIN (
+          SELECT a0."ArticleId", a0."SourceId", s."Id", s."IsActive", s."IsOfficial", s."LastVerifiedAt", s."Name", s."PublishedAt", s."Publisher", s."RetrievedAt", s."SourceType", s."Url"
+          FROM central."ArticleSource" AS a0
+          INNER JOIN central."Sources" AS s ON a0."SourceId" = s."Id"
+      ) AS s0 ON a."Id" = s0."ArticleId"
+      WHERE a."Status" = 2 AND a."ReviewStatus" <> 2
+      ORDER BY a."Id", s0."ArticleId", s0."SourceId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@candidate_ArticleId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."ArticleId" = @candidate_ArticleId
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5042
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\Projeto Contabilidade\backend\src\CentralContabil.Api
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p0
+      WHERE "Id" = @p1;
+info: System.Net.Http.HttpClient.gemini-provider.LogicalHandler[100]
+      Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent
+info: System.Net.Http.HttpClient.gemini-provider.ClientHandler[100]
+      Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent
+info: System.Net.Http.HttpClient.gemini-provider.ClientHandler[104]
+      HTTP request failed after 101.4798ms
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: System.Net.Http.HttpClient.gemini-provider.LogicalHandler[104]
+      HTTP request failed after 118.1711ms
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+warn: CentralContabil.Api.Modules.AI.Infrastructure.ConfigurableEmbeddingService[0]
+      Provider de embeddings gemini indisponível; usando fallback local
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+         at CentralContabil.Api.Modules.AI.Infrastructure.GeminiEmbeddingProvider.GenerateEmbeddingAsync(String text, EmbeddingPurpose purpose, CancellationToken cancellationToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\AI\Infrastructure\ConfiguredAiProviders.cs:line 186
+         at CentralContabil.Api.Modules.AI.Infrastructure.ConfigurableEmbeddingService.GenerateEmbeddingAsync(String text, EmbeddingPurpose purpose, CancellationToken cancellationToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\AI\Infrastructure\ConfiguredAiProviders.cs:line 212
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p0='?', @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "Embedding" = CAST(@p0 AS vector), "EmbeddingStatus" = 1 WHERE "Id" = @p1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT c."Id", c."Category", c."CreatedAt", c."Description", c."IsActive", c."Name", c."Slug", c."UpdatedAt"
+      FROM central."Calculators" AS c
+      WHERE c."IsActive"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@candidate_DocumentType='?' (DbType = Int32), @candidate_Title='?'], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."DocumentType" = @candidate_DocumentType AND k."Title" = @candidate_Title
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p0
+      WHERE "Id" = @p1;
+info: System.Net.Http.HttpClient.gemini-provider.LogicalHandler[100]
+      Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent
+info: System.Net.Http.HttpClient.gemini-provider.ClientHandler[100]
+      Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent
+info: System.Net.Http.HttpClient.gemini-provider.ClientHandler[104]
+      HTTP request failed after 9.8251ms
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: System.Net.Http.HttpClient.gemini-provider.LogicalHandler[104]
+      HTTP request failed after 10.2238ms
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+warn: CentralContabil.Api.Modules.AI.Infrastructure.ConfigurableEmbeddingService[0]
+      Provider de embeddings gemini indisponível; usando fallback local
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+         at CentralContabil.Api.Modules.AI.Infrastructure.GeminiEmbeddingProvider.GenerateEmbeddingAsync(String text, EmbeddingPurpose purpose, CancellationToken cancellationToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\AI\Infrastructure\ConfiguredAiProviders.cs:line 186
+         at CentralContabil.Api.Modules.AI.Infrastructure.ConfigurableEmbeddingService.GenerateEmbeddingAsync(String text, EmbeddingPurpose purpose, CancellationToken cancellationToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\AI\Infrastructure\ConfiguredAiProviders.cs:line 212
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p0='?', @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "Embedding" = CAST(@p0 AS vector), "EmbeddingStatus" = 1 WHERE "Id" = @p1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@candidate_DocumentType='?' (DbType = Int32), @candidate_Title='?'], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."DocumentType" = @candidate_DocumentType AND k."Title" = @candidate_Title
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p0
+      WHERE "Id" = @p1;
+info: System.Net.Http.HttpClient.gemini-provider.LogicalHandler[100]
+      Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent
+info: System.Net.Http.HttpClient.gemini-provider.ClientHandler[100]
+      Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent
+info: System.Net.Http.HttpClient.gemini-provider.ClientHandler[104]
+      HTTP request failed after 9.8705ms
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: System.Net.Http.HttpClient.gemini-provider.LogicalHandler[104]
+      HTTP request failed after 10.2736ms
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+warn: CentralContabil.Api.Modules.AI.Infrastructure.ConfigurableEmbeddingService[0]
+      Provider de embeddings gemini indisponível; usando fallback local
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+         at CentralContabil.Api.Modules.AI.Infrastructure.GeminiEmbeddingProvider.GenerateEmbeddingAsync(String text, EmbeddingPurpose purpose, CancellationToken cancellationToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\AI\Infrastructure\ConfiguredAiProviders.cs:line 186
+         at CentralContabil.Api.Modules.AI.Infrastructure.ConfigurableEmbeddingService.GenerateEmbeddingAsync(String text, EmbeddingPurpose purpose, CancellationToken cancellationToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\AI\Infrastructure\ConfiguredAiProviders.cs:line 212
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?', @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "Embedding" = CAST(@p0 AS vector), "EmbeddingStatus" = 1 WHERE "Id" = @p1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@candidate_DocumentType='?' (DbType = Int32), @candidate_Title='?'], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."DocumentType" = @candidate_DocumentType AND k."Title" = @candidate_Title
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p0
+      WHERE "Id" = @p1;
+info: System.Net.Http.HttpClient.gemini-provider.LogicalHandler[100]
+      Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent
+info: System.Net.Http.HttpClient.gemini-provider.ClientHandler[100]
+      Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent
+info: System.Net.Http.HttpClient.gemini-provider.ClientHandler[104]
+      HTTP request failed after 7.9206ms
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: System.Net.Http.HttpClient.gemini-provider.LogicalHandler[104]
+      HTTP request failed after 8.294ms
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+warn: CentralContabil.Api.Modules.AI.Infrastructure.ConfigurableEmbeddingService[0]
+      Provider de embeddings gemini indisponível; usando fallback local
+      System.Net.Http.HttpRequestException: The SSL connection could not be established, see inner exception.
+       ---> System.Security.Authentication.AuthenticationException: Authentication failed, see inner exception.
+       ---> System.ComponentModel.Win32Exception (0x8009030E): Credenciais não disponíveis no pacote de segurança
+         at System.Net.SSPIWrapper.AcquireCredentialsHandle(ISSPIInterface secModule, String package, CredentialUse intent, SCH_CREDENTIALS* scc)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(CredentialUse credUsage, SCH_CREDENTIALS* secureCredential)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandleSchCredentials(SslAuthenticationOptions authOptions)
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         --- End of inner exception stack trace ---
+         at System.Net.Security.SslStreamPal.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireCredentialsHandle(SslAuthenticationOptions sslAuthenticationOptions, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.AcquireClientCredentials(Byte[]& thumbPrint, Boolean newCredentialsRequested)
+         at System.Net.Security.SslStream.GenerateToken(ReadOnlySpan`1 inputBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.NextMessage(ReadOnlySpan`1 incomingBuffer, Int32& consumed)
+         at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+         at CentralContabil.Api.Modules.AI.Infrastructure.GeminiEmbeddingProvider.GenerateEmbeddingAsync(String text, EmbeddingPurpose purpose, CancellationToken cancellationToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\AI\Infrastructure\ConfiguredAiProviders.cs:line 186
+         at CentralContabil.Api.Modules.AI.Infrastructure.ConfigurableEmbeddingService.GenerateEmbeddingAsync(String text, EmbeddingPurpose purpose, CancellationToken cancellationToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\AI\Infrastructure\ConfiguredAiProviders.cs:line 212
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?', @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "Embedding" = CAST(@p0 AS vector), "EmbeddingStatus" = 1 WHERE "Id" = @p1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1

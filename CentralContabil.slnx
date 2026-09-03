@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/src/CentralContabil.Api/CentralContabil.Api.csproj" />
+    <Project Path="backend/tests/CentralContabil.UnitTests/CentralContabil.UnitTests.csproj" />
+    <Project Path="backend/tests/CentralContabil.IntegrationTests/CentralContabil.IntegrationTests.csproj" />
+  </Folder>
+</Solution>
+

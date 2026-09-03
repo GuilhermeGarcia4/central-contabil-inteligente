@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "central-contabil": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": { "builder": "@angular/build:application", "options": { "browser": "src/main.ts", "tsConfig": "tsconfig.app.json", "inlineStyleLanguage": "scss", "assets": [{ "glob": "**/*", "input": "public" }], "styles": ["src/styles.scss"] }, "configurations": { "production": { "outputHashing": "all", "budgets": [{ "type": "initial", "maximumWarning": "700kB", "maximumError": "1MB" }] }, "development": { "optimization": false, "sourceMap": true } }, "defaultConfiguration": "production" },
+        "serve": { "builder": "@angular/build:dev-server", "configurations": { "production": { "buildTarget": "central-contabil:build:production" }, "development": { "buildTarget": "central-contabil:build:development", "proxyConfig": "proxy.conf.json" } }, "defaultConfiguration": "development" },
+        "test": { "builder": "@angular/build:unit-test", "options": { "tsConfig": "tsconfig.spec.json", "buildTarget": "central-contabil:build:development" } }
+      }
+    }
+  },
+  "cli": {
+    "analytics": "c97ae4df-709b-4b8a-8623-0d4972735c9f"
+  }
+}
+

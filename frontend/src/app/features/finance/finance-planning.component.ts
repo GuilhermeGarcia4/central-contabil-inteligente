@@ -1,0 +1,19 @@
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { FinanceCategory, FinanceService, PlanningSummary } from './finance.service';
+import { FinanceNavComponent } from './finance-nav.component';
+
+@Component({imports:[FormsModule,CurrencyPipe,DecimalPipe,FinanceNavComponent],template:`<section class="page finance-v5"><app-finance-nav/><span class="eyebrow">PLANEJAMENTO</span><h1>Orçamento mensal</h1><p class="lead">Defina quanto pretende gastar em cada categoria e acompanhe o uso.</p>
+  <div class="toolbar"><label>Mês<input type="month" [(ngModel)]="period" (change)="load()"></label><label>Categoria<select [(ngModel)]="categoryId"><option value="">Selecione</option>@for(c of expenseCategories;track c.id){<option [value]="c.id">{{c.name}}</option>}</select></label><label>Valor planejado<input type="number" min="0.01" step="0.01" [(ngModel)]="plannedAmount"></label><button class="primary" (click)="save()">Salvar orçamento</button></div>
+  @if(error()){<p class="notice error">{{error()}}</p>}@if(data();as budget){<div class="totals panel"><span>Planejado <b>{{budget.totalPlanned|currency:'BRL'}}</b></span><span>Utilizado <b>{{budget.totalUsed|currency:'BRL'}}</b></span><span>Disponível <b>{{budget.available|currency:'BRL'}}</b></span></div><div class="cards-list">@for(item of budget.categories;track item.id){<article class="panel" [class.exceeded]="item.isExceeded"><div><h2>{{item.categoryName}}</h2><button class="link" (click)="remove(item.id)">Excluir</button></div><progress [value]="item.percentage" max="100"></progress><p>{{item.usedAmount|currency:'BRL'}} de {{item.plannedAmount|currency:'BRL'}} · {{item.percentage|number:'1.0-1'}}%</p>@if(item.isExceeded){<strong>Orçamento ultrapassado</strong>}</article>}@empty{<p class="finance-empty">Nenhum orçamento definido para este mês.</p>}</div>}
+</section>`,styles:[`.finance-v5{max-width:1000px}.toolbar{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;margin:28px 0}.toolbar input,.toolbar select{display:block;width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;margin-top:5px}.totals{display:flex;gap:32px;flex-wrap:wrap}.totals span{display:grid}.cards-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.cards-list article>div{display:flex;justify-content:space-between}.cards-list h2{font-size:18px}.cards-list progress{width:100%;height:14px}.exceeded{border-color:var(--danger)}.exceeded strong{color:var(--danger)}@media(max-width:760px){.toolbar,.cards-list{grid-template-columns:1fr}}`]})
+export class FinancePlanningComponent{
+  private finance=inject(FinanceService);readonly categories=signal<FinanceCategory[]>([]);readonly data=signal<PlanningSummary|null>(null);readonly error=signal('');period=currentMonth();categoryId='';plannedAmount:number|null=null;
+  constructor(){this.finance.categories().subscribe(x=>this.categories.set(x));this.load()}
+  get expenseCategories(){return this.categories().filter(x=>x.type==='Expense')}
+  load(){const [year,month]=this.period.split('-').map(Number);this.finance.budgets(year,month).subscribe({next:x=>this.data.set(x),error:()=>this.error.set('Não foi possível carregar o planejamento.')})}
+  save(){if(!this.categoryId||!this.plannedAmount||this.plannedAmount<=0)return;const [year,month]=this.period.split('-').map(Number);this.finance.saveBudget(this.categoryId,year,month,this.plannedAmount).subscribe({next:()=>{this.plannedAmount=null;this.load()},error:()=>this.error.set('Não foi possível salvar o orçamento.')})}
+  remove(id:string){if(confirm('Excluir este orçamento?'))this.finance.removeBudget(id).subscribe(()=>this.load())}
+}
+function currentMonth(){const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`}

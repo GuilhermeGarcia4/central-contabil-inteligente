@@ -1,0 +1,25 @@
+﻿  Determinando os projetos a serem restaurados...
+  Todos os projetos estão atualizados para restauração.
+  CentralContabil.Api -> D:\Projeto Contabilidade\backend\src\CentralContabil.Api\bin\Debug\net10.0\CentralContabil.Api.dll
+  CentralContabil.IntegrationTests -> D:\Projeto Contabilidade\backend\tests\CentralContabil.IntegrationTests\bin\Debug\net10.0\CentralContabil.IntegrationTests.dll
+Execução de teste para D:\Projeto Contabilidade\backend\tests\CentralContabil.IntegrationTests\bin\Debug\net10.0\CentralContabil.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+1 arquivos de teste no total corresponderam ao padrão especificado.
+dotnet : [xUnit.net 00:00:04.80]     
+CentralContabil.IntegrationTests.FinanceV7ApiTests.Financial_question_returns_grounded_financial_answer [FAIL]
+No linha:1 caractere:194
++ ... STRING=$cs; dotnet test backend/tests/CentralContabil.IntegrationTest ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...l_answer [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Com falha CentralContabil.IntegrationTests.FinanceV7ApiTests.Financial_question_returns_grounded_financial_answer [4 s]
+  Mensagem de erro:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Férias. Estimativa bruta e auditável de f"···
+Not found: "4000"
+  Rastreamento de pilha:
+     at CentralContabil.IntegrationTests.FinanceV7ApiTests.Financial_question_returns_grounded_financial_answer() in D:\Projeto Contabilidade\backend\tests\CentralContabil.IntegrationTests\FinanceV7ApiTests.cs:line 156
+   at CentralContabil.IntegrationTests.FinanceV7ApiTests.Financial_question_returns_grounded_financial_answer() in D:\Projeto Contabilidade\backend\tests\CentralContabil.IntegrationTests\FinanceV7ApiTests.cs:line 158
+--- End of stack trace from previous location ---
+
+Com falha! – Com falha:     1, Aprovado:     0, Ignorado:     0, Total:     1, Duração: 4 s - CentralContabil.IntegrationTests.dll (net10.0)

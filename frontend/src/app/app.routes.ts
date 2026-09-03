@@ -1,0 +1,37 @@
+import { Routes } from '@angular/router';
+import { authGuard, adminGuard } from './core/guards/auth.guard';
+
+export const routes: Routes = [
+  { path: 'minha-conta/financas/planejamento', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-planning.component').then(m => m.FinancePlanningComponent), title: 'Planejamento financeiro' },
+  { path: 'minha-conta/financas/metas', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-goals.component').then(m => m.FinanceGoalsComponent), title: 'Metas financeiras' },
+  { path: 'minha-conta/financas/compromissos', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-commitments.component').then(m => m.FinanceCommitmentsComponent), title: 'Compromissos financeiros' },
+  { path: 'minha-conta/financas/relatorio', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-report.component').then(m => m.FinanceReportComponent), title: 'Relatório financeiro' },
+  { path: 'minha-conta/financas/cartoes', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-cards.component').then(m => m.FinanceCardsComponent), title: 'Meus cartões' },
+  { path: 'minha-conta/financas/contas', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-accounts.component').then(m => m.FinanceAccountsComponent), title: 'Minhas contas' },
+  { path: 'minha-conta/financas/contas-a-pagar', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-scheduled.component').then(m => m.FinanceScheduledComponent), title: 'Contas a pagar e receber' },
+  { path: 'minha-conta/financas/calendario', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-calendar.component').then(m => m.FinanceCalendarComponent), title: 'Calendário financeiro' },
+  { path: 'minha-conta/financas/dividas', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-debts.component').then(m => m.FinanceDebtsComponent), title: 'Minhas dívidas' },
+  { path: 'minha-conta/financas/reserva', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-reserve.component').then(m => m.FinanceReserveComponent), title: 'Reserva de emergência' },
+  { path: 'minha-conta/financas/relatorio-anual', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-annual.component').then(m => m.FinanceAnnualComponent), title: 'Relatório anual' },
+  { path: 'minha-conta/financas/importar', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-import.component').then(m => m.FinanceImportComponent), title: 'Importar lançamentos' },
+  { path: 'minha-conta/financas/preferencias', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-preferences.component').then(m => m.FinancePreferencesComponent), title: 'Preferências financeiras' },
+  { path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent), title: 'Contabiliza Fácil' },
+  { path: 'buscar', loadComponent: () => import('./features/search/unified-search.component').then(m => m.UnifiedSearchComponent), title: 'Busca universal' },
+  { path: 'pesquisa', redirectTo: 'buscar' },
+  { path: 'empresas/:cnpj', loadComponent: () => import('./features/companies/company.component').then(m => m.CompanyComponent), title: 'Consulta de empresa' },
+  { path: 'empresas', loadComponent: () => import('./features/companies/company.component').then(m => m.CompanyComponent), title: 'Empresas e CNPJ' },
+  { path: 'ncm', loadComponent: () => import('./features/ncm/ncm.component').then(m => m.NcmComponent), title: 'Consulta NCM' },
+  { path: 'novidades', loadComponent: () => import('./features/updates/updates.component').then(m => m.UpdatesComponent), title: 'Novidades' },
+  { path: 'artigos/:slug', loadComponent: () => import('./features/articles/article.component').then(m => m.ArticleComponent) },
+  { path: 'calculadoras/:slug', loadComponent: () => import('./features/calculators/calculator.component').then(m => m.CalculatorComponent) },
+  { path: 'entrar', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent), title: 'Entrar' },
+  { path: 'assistente', loadComponent: () => import('./features/assistant/assistant.component').then(m => m.AssistantComponent), title: 'Central Contábil IA' },
+  { path: 'minha-conta/financas/lancamentos', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-transactions.component').then(m => m.FinanceTransactionsComponent), title: 'Lançamentos financeiros' },
+  { path: 'minha-conta/financas', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-dashboard.component').then(m => m.FinanceDashboardComponent), title: 'Controle Financeiro' },
+  { path: 'minha-conta', canActivate: [authGuard], loadComponent: () => import('./features/account/account.component').then(m => m.AccountComponent), title: 'Minha conta' },
+  { path: 'admin/integracoes', canActivate: [adminGuard], loadComponent: () => import('./features/admin/integrations.component').then(m => m.IntegrationsAdminComponent), title: 'Saúde das integrações' },
+  { path: 'admin/knowledge', canActivate: [adminGuard], loadComponent: () => import('./features/admin/knowledge.component').then(m => m.KnowledgeAdminComponent), title: 'Base de conhecimento' },
+  { path: 'admin/ai', canActivate: [adminGuard], loadComponent: () => import('./features/admin/ai.component').then(m => m.AiAdminComponent), title: 'Administração da IA' },
+  { path: 'admin', canActivate: [adminGuard], loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent), title: 'Administração' },
+  { path: '**', redirectTo: '' }
+];

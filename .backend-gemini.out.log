@@ -1,0 +1,136 @@
+Usando as configurações de inicialização de backend\src\CentralContabil.Api\Properties\launchSettings.json...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+          "MigrationId" character varying(150) NOT NULL,
+          "ProductVersion" character varying(32) NOT NULL,
+          CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@normalizedName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedName
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedName
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Categories" AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Calculators" AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Articles" AS a)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedEmail='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DisplayName", a."Email", a."EmailConfirmed", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM central."AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @normalizedEmail
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedRoleName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedRoleName
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p='?' (DbType = Guid), @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", a."RoleId"
+      FROM central."AspNetUserRoles" AS a
+      WHERE a."UserId" = @p AND a."RoleId" = @p1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."CategoryId", a."ContentVersion", a."CreatedAt", a."Jurisdiction", a."LastReviewedAt", a."NeedsReviewAt", a."PublishedAt", a."ReviewStatus", a."SimpleContent", a."Slug", a."Status", a."Summary", a."TechnicalContent", a."Title", a."UpdatedAt", a."ValidFrom", a."ValidUntil", s0."ArticleId", s0."SourceId", s0."Id", s0."IsActive", s0."IsOfficial", s0."LastVerifiedAt", s0."Name", s0."PublishedAt", s0."Publisher", s0."RetrievedAt", s0."SourceType", s0."Url"
+      FROM central."Articles" AS a
+      LEFT JOIN (
+          SELECT a0."ArticleId", a0."SourceId", s."Id", s."IsActive", s."IsOfficial", s."LastVerifiedAt", s."Name", s."PublishedAt", s."Publisher", s."RetrievedAt", s."SourceType", s."Url"
+          FROM central."ArticleSource" AS a0
+          INNER JOIN central."Sources" AS s ON a0."SourceId" = s."Id"
+      ) AS s0 ON a."Id" = s0."ArticleId"
+      WHERE a."Status" = 2 AND a."ReviewStatus" <> 2
+      ORDER BY a."Id", s0."ArticleId", s0."SourceId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@candidate_ArticleId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."ArticleId" = @candidate_ArticleId
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5042
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\Projeto Contabilidade\backend\src\CentralContabil.Api
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p0='?' (DbType = Guid), @p3='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p14='?' (DbType = Guid), @p4='?' (DbType = Int32), @p5='?', @p6='?' (DbType = DateTime), @p7='?' (DbType = Int32), @p8='?', @p9='?', @p10='?' (DbType = Int32), @p11='?' (DbType = Guid), @p12='?' (DbType = Int32), @p13='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      DELETE FROM central."KnowledgeChunks"
+      WHERE "Id" = @p0;
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p1, "UpdatedAt" = @p2
+      WHERE "Id" = @p3;
+      UPDATE central."KnowledgeChunks" SET "ChunkIndex" = @p4, "Content" = @p5, "CreatedAt" = @p6, "EmbeddingDimensions" = @p7, "EmbeddingModel" = @p8, "EmbeddingProvider" = @p9, "EmbeddingStatus" = @p10, "KnowledgeDocumentId" = @p11, "TokenEstimate" = @p12, "UpdatedAt" = @p13
+      WHERE "Id" = @p14;
+fail: CentralContabil.Api.Modules.Knowledge.Infrastructure.KnowledgeIndexingWorker[0]
+      Falha no processamento da fila de conhecimento
+      Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException: The database operation was expected to affect 1 row(s), but actually affected 0 row(s); data may have been modified or deleted since entities were loaded. See https://go.microsoft.com/fwlink/?LinkId=527962 for information on understanding and handling optimistic concurrency exceptions.
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Update.Internal.NpgsqlModificationCommandBatch.ThrowAggregateUpdateConcurrencyExceptionAsync(RelationalDataReader reader, Int32 commandIndex, Int32 expectedRowsAffected, Int32 rowsAffected, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Update.Internal.NpgsqlModificationCommandBatch.Consume(RelationalDataReader reader, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalDatabase.SaveChangesAsync(IList`1 entries, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.<>c__DisplayClass30_0`2.<<ExecuteAsync>b__0>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementationAsync[TState,TResult](Func`4 operation, Func`4 verifySucceeded, TState state, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementationAsync[TState,TResult](Func`4 operation, Func`4 verifySucceeded, TState state, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+         at CentralContabil.Api.Modules.Knowledge.Application.KnowledgeIndexingService.UpsertAsync(KnowledgeDocument candidate, CancellationToken ct) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\Knowledge\Application\KnowledgeServices.cs:line 141
+         at CentralContabil.Api.Modules.Knowledge.Application.KnowledgeIndexingService.IndexAllEligibleAsync(CancellationToken ct) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\Knowledge\Application\KnowledgeServices.cs:line 93
+         at CentralContabil.Api.Modules.Knowledge.Infrastructure.KnowledgeIndexingWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projeto Contabilidade\backend\src\CentralContabil.Api\Modules\Knowledge\Infrastructure\KnowledgeIndexingWorker.cs:line 20
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: CentralContabil.Api.Infrastructure.GlobalExceptionHandler[0]
+      Request rejected with 400 while processing POST /api/v1/assistant/ask: Failed to read parameter "AssistantAskRequest request" from the request body as JSON.

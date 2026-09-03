@@ -1,0 +1,7 @@
+import { DatePipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+interface Updates{since:string;articles:{title:string;slug:string;summary:string;status:number;updatedAt:string}[];integrations:{provider:string;entityType:string;total:number;lastRetrievedAt:string}[]}
+@Component({imports:[DatePipe,RouterLink],template:`<section class="page"><span class="eyebrow">ACOMPANHAMENTO</span><h1>Novidades e atualizações</h1><p class="lead">Conteúdos revisados e informações externas consultadas nos últimos 30 dias.</p>@if(data();as value){<div class="update-grid"><section><h2>Conteúdo</h2><div class="timeline">@for(item of value.articles;track item.slug){<a [routerLink]="['/artigos',item.slug]"><time>{{item.updatedAt|date:'dd/MM/yyyy'}}</time><b>{{item.title}}</b><span>{{item.summary}}</span></a>}@empty{<p>Nenhum conteúdo atualizado no período.</p>}</div></section><aside class="panel"><h2>Integrações</h2>@for(item of value.integrations;track item.provider+item.entityType){<div class="line"><span>{{item.provider}} · {{item.entityType}}</span><b>{{item.total}}</b></div>}@empty{<p>As consultas externas aparecerão aqui conforme forem utilizadas.</p>}</aside></div>}@else{<p>Carregando atualizações…</p>}</section>`})
+export class UpdatesComponent{private http=inject(HttpClient);data=signal<Updates|null>(null);constructor(){this.http.get<Updates>('/api/v2/updates').subscribe(value=>this.data.set(value))}}

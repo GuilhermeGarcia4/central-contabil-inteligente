@@ -1,0 +1,215 @@
+Usando as configurações de inicialização de backend\src\CentralContabil.Api\Properties\launchSettings.json...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (15ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+          "MigrationId" character varying(150) NOT NULL,
+          "ProductVersion" character varying(32) NOT NULL,
+          CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@normalizedName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedName
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedName
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Categories" AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Calculators" AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM central."Articles" AS a)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedEmail='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DisplayName", a."Email", a."EmailConfirmed", a."LockoutEnabled", a."LockoutEnd", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM central."AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @normalizedEmail
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@normalizedRoleName='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."ConcurrencyStamp", a."Name", a."NormalizedName"
+      FROM central."AspNetRoles" AS a
+      WHERE a."NormalizedName" = @normalizedRoleName
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p='?' (DbType = Guid), @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", a."RoleId"
+      FROM central."AspNetUserRoles" AS a
+      WHERE a."UserId" = @p AND a."RoleId" = @p1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."CategoryId", a."ContentVersion", a."CreatedAt", a."Jurisdiction", a."LastReviewedAt", a."NeedsReviewAt", a."PublishedAt", a."ReviewStatus", a."SimpleContent", a."Slug", a."Status", a."Summary", a."TechnicalContent", a."Title", a."UpdatedAt", a."ValidFrom", a."ValidUntil", s0."ArticleId", s0."SourceId", s0."Id", s0."IsActive", s0."IsOfficial", s0."LastVerifiedAt", s0."Name", s0."PublishedAt", s0."Publisher", s0."RetrievedAt", s0."SourceType", s0."Url"
+      FROM central."Articles" AS a
+      LEFT JOIN (
+          SELECT a0."ArticleId", a0."SourceId", s."Id", s."IsActive", s."IsOfficial", s."LastVerifiedAt", s."Name", s."PublishedAt", s."Publisher", s."RetrievedAt", s."SourceType", s."Url"
+          FROM central."ArticleSource" AS a0
+          INNER JOIN central."Sources" AS s ON a0."SourceId" = s."Id"
+      ) AS s0 ON a."Id" = s0."ArticleId"
+      WHERE a."Status" = 2 AND a."ReviewStatus" <> 2
+      ORDER BY a."Id", s0."ArticleId", s0."SourceId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@candidate_ArticleId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."ArticleId" = @candidate_ArticleId
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5042
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\Projeto Contabilidade\backend\src\CentralContabil.Api
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@p0='?', @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "Embedding" = CAST(@p0 AS vector), "EmbeddingStatus" = 1 WHERE "Id" = @p1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p3='?' (DbType = Guid), @p0='?' (DbType = Int32), @p1='?', @p2='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "EmbeddingDimensions" = @p0, "EmbeddingModel" = @p1, "EmbeddingProvider" = @p2
+      WHERE "Id" = @p3;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT c."Id", c."Category", c."CreatedAt", c."Description", c."IsActive", c."Name", c."Slug", c."UpdatedAt"
+      FROM central."Calculators" AS c
+      WHERE c."IsActive"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@candidate_DocumentType='?' (DbType = Int32), @candidate_Title='?'], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."DocumentType" = @candidate_DocumentType AND k."Title" = @candidate_Title
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p0='?', @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "Embedding" = CAST(@p0 AS vector), "EmbeddingStatus" = 1 WHERE "Id" = @p1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p3='?' (DbType = Guid), @p0='?' (DbType = Int32), @p1='?', @p2='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "EmbeddingDimensions" = @p0, "EmbeddingModel" = @p1, "EmbeddingProvider" = @p2
+      WHERE "Id" = @p3;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@candidate_DocumentType='?' (DbType = Int32), @candidate_Title='?'], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."DocumentType" = @candidate_DocumentType AND k."Title" = @candidate_Title
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p0='?', @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "Embedding" = CAST(@p0 AS vector), "EmbeddingStatus" = 1 WHERE "Id" = @p1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p3='?' (DbType = Guid), @p0='?' (DbType = Int32), @p1='?', @p2='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "EmbeddingDimensions" = @p0, "EmbeddingModel" = @p1, "EmbeddingProvider" = @p2
+      WHERE "Id" = @p3;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@candidate_DocumentType='?' (DbType = Int32), @candidate_Title='?'], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."DocumentType" = @candidate_DocumentType AND k."Title" = @candidate_Title
+          LIMIT 1
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeDocuments" SET "LastIndexedAt" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?', @p1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "Embedding" = CAST(@p0 AS vector), "EmbeddingStatus" = 1 WHERE "Id" = @p1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p3='?' (DbType = Guid), @p0='?' (DbType = Int32), @p1='?', @p2='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE central."KnowledgeChunks" SET "EmbeddingDimensions" = @p0, "EmbeddingModel" = @p1, "EmbeddingProvider" = @p2
+      WHERE "Id" = @p3;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+warn: Microsoft.EntityFrameworkCore.Query[10102]
+      The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator. This may lead to unpredictable results. If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@referenceDate='?' (DbType = Date), @pattern='?', @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT k1."Id", k1."ArticleId", k1."Content", k1."ContentHash", k1."CreatedAt", k1."DocumentType", k1."IsOfficial", k1."Jurisdiction", k1."LastIndexedAt", k1."LastVerifiedAt", k1."LegalReferenceId", k1."NeedsReviewAt", k1."OriginUrl", k1."SourceId", k1."Status", k1."Title", k1."UpdatedAt", k1."ValidFrom", k1."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM (
+          SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil"
+          FROM central."KnowledgeDocuments" AS k
+          WHERE k."Status" = 1 AND (k."ValidFrom" IS NULL OR k."ValidFrom" <= @referenceDate) AND (k."ValidUntil" IS NULL OR k."ValidUntil" >= @referenceDate) AND (k."Title" ILIKE @pattern ESCAPE '' OR k."Content" ILIKE @pattern ESCAPE '')
+          LIMIT @p
+      ) AS k1
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k1."Id" = k0."KnowledgeDocumentId"
+      ORDER BY k1."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (45ms) [Parameters=[@semanticIds='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT k."Id", k."ArticleId", k."Content", k."ContentHash", k."CreatedAt", k."DocumentType", k."IsOfficial", k."Jurisdiction", k."LastIndexedAt", k."LastVerifiedAt", k."LegalReferenceId", k."NeedsReviewAt", k."OriginUrl", k."SourceId", k."Status", k."Title", k."UpdatedAt", k."ValidFrom", k."ValidUntil", k0."Id", k0."ChunkIndex", k0."Content", k0."CreatedAt", k0."EmbeddingDimensions", k0."EmbeddingModel", k0."EmbeddingProvider", k0."EmbeddingStatus", k0."KnowledgeDocumentId", k0."TokenEstimate", k0."UpdatedAt"
+      FROM central."KnowledgeDocuments" AS k
+      LEFT JOIN central."KnowledgeChunks" AS k0 ON k."Id" = k0."KnowledgeDocumentId"
+      WHERE k."Id" = ANY (@semanticIds)
+      ORDER BY k."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@articleIds='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."CategoryId", a."ContentVersion", a."CreatedAt", a."Jurisdiction", a."LastReviewedAt", a."NeedsReviewAt", a."PublishedAt", a."ReviewStatus", a."SimpleContent", a."Slug", a."Status", a."Summary", a."TechnicalContent", a."Title", a."UpdatedAt", a."ValidFrom", a."ValidUntil"
+      FROM central."Articles" AS a
+      WHERE a."Id" = ANY (@articleIds)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = Int64), @p3='?' (DbType = Int32), @p4='?', @p5='?', @p6='?' (DbType = Int32), @p7='?', @p8='?' (DbType = Int32), @p9='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO central."AIRequests" ("Id", "CreatedAt", "DurationMs", "InputTokens", "Intent", "Model", "OutputTokens", "Provider", "Status", "UserId")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9);
