@@ -208,7 +208,9 @@ app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
         : Results.Json(new { status = "unhealthy", database = "disconnected", utc = DateTimeOffset.UtcNow }, statusCode: StatusCodes.Status503ServiceUnavailable);
 }).AllowAnonymous();
 app.MapApi(); app.MapV2Api(); app.MapV3Api(); app.MapFinanceApi(); app.MapFinanceV5Api(); app.MapFinanceV6Api(); app.MapFinanceV7Api();
-await DevelopmentSeed.ApplyAsync(app.Services, app.Configuration);
+await DatabaseMigration.ApplyAsync(app.Services);
+if (app.Environment.IsDevelopment())
+    await DevelopmentSeed.ApplyAsync(app.Services, app.Configuration);
 app.Run();
 
 static void ConfigureExternalClient(HttpClient client, string baseUrl)

@@ -1,7 +1,6 @@
 using CentralContabil.Api.Modules.Shared.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
 
 namespace CentralContabil.Api.Infrastructure;
 
@@ -9,14 +8,11 @@ public static class DevelopmentSeed
 {
     public static async Task ApplyAsync(IServiceProvider services, IConfiguration config)
     {
-        await ApplyMigrationsWithRetryAsync(services);
-
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var environment = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
 
-        // Falhas de conexão/migration não são escondidas: o seed só começa depois
-        // que o schema estiver atualizado com sucesso.
+        // Defesa adicional: este seed nunca deve produzir dados fora de Development.
         if (!environment.IsDevelopment()) return;
 
         var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
@@ -69,34 +65,4 @@ public static class DevelopmentSeed
         }
     }
 
-    private static async Task ApplyMigrationsWithRetryAsync(IServiceProvider services)
-    {
-        const int maxAttempts = 12;
-        var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(DevelopmentSeed));
-
-        for (var attempt = 1; attempt <= maxAttempts; attempt++)
-        {
-            try
-            {
-                using var scope = services.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await db.Database.MigrateAsync();
-                if (attempt > 1)
-                    logger.LogInformation("Conexao com o PostgreSQL restabelecida na tentativa {Attempt}.", attempt);
-                return;
-            }
-            catch (Exception exception) when (
-                attempt < maxAttempts &&
-                (exception is DbException || exception is TimeoutException))
-            {
-                var delay = TimeSpan.FromSeconds(Math.Min(attempt, 5));
-                logger.LogWarning(
-                    "PostgreSQL indisponivel na inicializacao (tentativa {Attempt}/{MaxAttempts}). Nova tentativa em {DelaySeconds}s.",
-                    attempt,
-                    maxAttempts,
-                    delay.TotalSeconds);
-                await Task.Delay(delay);
-            }
-        }
-    }
 }

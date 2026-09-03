@@ -1,0 +1,43 @@
+# Source control and local tooling
+.git/
+.github/
+.vs/
+.vscode/
+.idea/
+.config/
+.checkpoints/
+.logs/
+.abacusai/
+.dotnet/
+.dotnet-*/
+.nuget/
+.node/
+.npm-cache/
+
+# Build and dependency outputs
+**/bin/
+**/obj/
+**/node_modules/
+**/.angular/
+**/dist/
+TestResults/
+**/TestResults/
+
+# Secrets and local configuration
+**/.env
+**/.env.*
+**/secrets.json
+*.pfx
+*.p12
+*.key
+*.pem
+
+# Files outside the backend production build
+frontend/
+backend/tests/
+docs/
+*.log
+*.zip
+docker-compose*.yml
+README.md
+dotnet-install.ps1
