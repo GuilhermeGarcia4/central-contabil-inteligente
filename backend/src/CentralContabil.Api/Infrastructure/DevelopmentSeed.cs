@@ -15,9 +15,6 @@ public static class DevelopmentSeed
         // Defesa adicional: este seed nunca deve produzir dados fora de Development.
         if (!environment.IsDevelopment()) return;
 
-        var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-        foreach (var name in new[] { "User", "Admin" }) if (!await roles.RoleExistsAsync(name)) await roles.CreateAsync(new IdentityRole<Guid>(name));
-
         if (!await db.Categories.AnyAsync()) {
             db.Categories.AddRange(
                 new Category { Name = "Trabalhista", Slug = "trabalhista", Description = "Direitos e relações de trabalho" },
@@ -61,7 +58,7 @@ public static class DevelopmentSeed
                 var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(DevelopmentSeed));
                 logger.LogWarning("A senha do administrador de desenvolvimento foi sincronizada com ADMIN_INITIAL_PASSWORD. Use uma senha forte e desative ADMIN_RESET_PASSWORD_ON_START após a validação.");
             }
-            if (!await users.IsInRoleAsync(admin, "Admin")) await users.AddToRoleAsync(admin, "Admin");
+            await UserRoleProvisioning.EnsureRoleAsync(users, admin, ApplicationRoles.Admin);
         }
     }
 

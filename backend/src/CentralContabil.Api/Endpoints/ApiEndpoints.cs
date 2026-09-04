@@ -29,7 +29,7 @@ public static class ApiEndpoints
             var user = new ApplicationUser { UserName = body.Email.Trim(), Email = body.Email.Trim(), DisplayName = body.DisplayName.Trim() };
             var result = await users.CreateAsync(user, body.Password);
             if (!result.Succeeded) return Results.ValidationProblem(result.Errors.GroupBy(x => x.Code).ToDictionary(x => x.Key, x => x.Select(e => e.Description).ToArray()));
-            await users.AddToRoleAsync(user, "User");
+            await UserRoleProvisioning.EnsureRoleAsync(users, user, ApplicationRoles.User);
             return Results.Created("/api/v1/account", new { user.Id, user.Email, user.DisplayName });
         }).AllowAnonymous();
         auth.MapPost("/login", async (LoginRequest body, HttpContext http, UserManager<ApplicationUser> users, AppDbContext db, TokenService tokens) => {
@@ -107,11 +107,8 @@ public static class ApiEndpoints
                     return Results.Redirect(FrontendRedirect(config, "/entrar", "googleError=account_link_failed"));
                 }
             }
+            await UserRoleProvisioning.EnsureRoleAsync(users, user, ApplicationRoles.User);
             var roles = await users.GetRolesAsync(user);
-            if (roles.Count == 0) {
-                await users.AddToRoleAsync(user, "User");
-                roles = await users.GetRolesAsync(user);
-            }
             var issued = tokens.Issue(user, roles);
             db.RefreshTokens.Add(new RefreshToken { UserId = user.Id, TokenHash = tokens.Hash(issued.RefreshToken), ExpiresAt = DateTimeOffset.UtcNow.AddDays(7) });
             await db.SaveChangesAsync();

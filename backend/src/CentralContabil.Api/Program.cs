@@ -58,6 +58,7 @@ builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connection, npgsql 
         errorCodesToAdd: null)));
 builder.Services.AddIdentityCore<ApplicationUser>(o => { o.Password.RequiredLength = 10; o.Password.RequireNonAlphanumeric = true; o.Password.RequireUppercase = true; o.User.RequireUniqueEmail = true; o.Lockout.MaxFailedAccessAttempts = 5; })
     .AddRoles<IdentityRole<Guid>>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+builder.Services.AddScoped<IdentityStructuralSeed>();
 var authentication = builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -98,7 +99,7 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
         };
     });
 }
-builder.Services.AddAuthorization(o => o.AddPolicy("AdminOnly", p => p.RequireRole("Admin")));
+builder.Services.AddAuthorization(o => o.AddPolicy("AdminOnly", p => p.RequireRole(ApplicationRoles.Admin)));
 builder.Services.AddCors(o => o.AddPolicy("web", p => p.WithOrigins(builder.Configuration["FRONTEND_ORIGIN"] ?? builder.Configuration["FrontendOrigin"] ?? "http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddRateLimiter(options =>
 {
@@ -108,7 +109,7 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("ai", context =>
     {
         var identity = context.User.Identity?.IsAuthenticated == true ? context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "authenticated" : context.Connection.RemoteIpAddress?.ToString() ?? "visitor";
-        var limit = context.User.IsInRole("Admin") ? 30 : context.User.Identity?.IsAuthenticated == true ? 15 : 5;
+        var limit = context.User.IsInRole(ApplicationRoles.Admin) ? 30 : context.User.Identity?.IsAuthenticated == true ? 15 : 5;
         return RateLimitPartition.GetFixedWindowLimiter(identity, _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 });
     });
 });
@@ -203,6 +204,11 @@ app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
 }).AllowAnonymous();
 app.MapApi(); app.MapV2Api(); app.MapV3Api(); app.MapFinanceApi(); app.MapFinanceV5Api(); app.MapFinanceV6Api(); app.MapFinanceV7Api();
 await DatabaseMigration.ApplyAsync(app.Services);
+using (var scope = app.Services.CreateScope())
+{
+    var identitySeed = scope.ServiceProvider.GetRequiredService<IdentityStructuralSeed>();
+    await identitySeed.SeedAsync();
+}
 if (app.Environment.IsDevelopment())
     await DevelopmentSeed.ApplyAsync(app.Services, app.Configuration);
 app.Run();
