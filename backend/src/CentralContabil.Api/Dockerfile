@@ -13,16 +13,23 @@ RUN dotnet publish "backend/src/CentralContabil.Api/CentralContabil.Api.csproj" 
     --no-restore \
     /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-ENV ASPNETCORE_ENVIRONMENT=Production \
-    ASPNETCORE_FORWARDEDHEADERS_ENABLED=true \
-    PORT=8080
+ENV ASPNETCORE_URLS=http://0.0.0.0:10000
 
-EXPOSE 8080
+EXPOSE 10000
 
 COPY --from=build /app/publish .
 
-USER app
-ENTRYPOINT ["sh", "-c", "exec dotnet CentralContabil.Api.dll --urls http://0.0.0.0:${PORT}"]
+USER $APP_UID
+
+ENTRYPOINT ["dotnet", "CentralContabil.Api.dll"]
