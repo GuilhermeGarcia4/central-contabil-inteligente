@@ -66,3 +66,47 @@ Em variáveis de ambiente, os mesmos nomes são:
 - `Authentication__Google__ClientSecret`
 
 Com a API em `http://localhost:5042` e o Angular em `http://localhost:4200`, o callback continua sendo `http://localhost:5042/signin-google`.
+
+## Dados de referência das calculadoras
+
+Na inicialização, depois das migrations, a API executa `ReferenceDataSeed` em todos os ambientes. Esse seed provisiona de forma idempotente apenas o catálogo técnico versionado no projeto: categorias e as calculadoras `ferias`, `decimo-terceiro` e `juros-compostos`. Registros existentes não são atualizados nem removidos.
+
+Os únicos `CalculationRuleSet` encontrados no código e no banco local são regras `dev-1`, sem fonte associada, e a regra de férias contém uma observação explícita de validação pendente. Por isso elas permanecem no `DevelopmentSeed` e **não são publicadas automaticamente em Production**. Uma regra trabalhista deve ser cadastrada, associada à fonte conferida e ativada pelo administrador responsável antes de ficar elegível. No modelo atual, `IsActive` é o único estado de publicação do `CalculationRuleSet`; a verificação da fonte fica em `Sources.IsOfficial` e `Sources.LastVerifiedAt`.
+
+Enquanto não houver regra ativa cuja vigência inclua a data UTC corrente, a API mantém a resposta segura HTTP 422. O seed não altera versões, vigências, fontes, parâmetros ou estados criados administrativamente.
+
+### Conferência somente de leitura no Neon
+
+O catálogo técnico esperado após o deploy pode ser consultado assim:
+
+```sql
+SELECT "Id", "Name", "Slug", "Category", "IsActive"
+FROM central."Calculators"
+ORDER BY "Slug";
+```
+
+Para conferir regras, versões, vigências, estado, fonte e parâmetros sem modificar dados:
+
+```sql
+SELECT
+    c."Slug" AS "Calculator",
+    r."Id" AS "RuleSetId",
+    r."Name",
+    r."Version",
+    r."ValidFrom",
+    r."ValidUntil",
+    r."IsActive",
+    s."Name" AS "Source",
+    s."Url" AS "SourceUrl",
+    s."IsOfficial",
+    s."LastVerifiedAt",
+    p."Key" AS "Parameter",
+    p."Value",
+    p."ValueType",
+    p."Description"
+FROM central."CalculationRuleSets" r
+JOIN central."Calculators" c ON c."Id" = r."CalculatorId"
+LEFT JOIN central."Sources" s ON s."Id" = r."SourceId"
+LEFT JOIN central."RuleParameters" p ON p."RuleSetId" = r."Id"
+ORDER BY c."Slug", r."ValidFrom", r."Version", p."Key";
+```

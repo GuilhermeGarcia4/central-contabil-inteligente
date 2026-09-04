@@ -15,28 +15,17 @@ public static class DevelopmentSeed
         // Defesa adicional: este seed nunca deve produzir dados fora de Development.
         if (!environment.IsDevelopment()) return;
 
-        if (!await db.Categories.AnyAsync()) {
-            db.Categories.AddRange(
-                new Category { Name = "Trabalhista", Slug = "trabalhista", Description = "Direitos e relações de trabalho" },
-                new Category { Name = "MEI", Slug = "mei", Description = "Orientações para microempreendedores" },
-                new Category { Name = "Financeiro", Slug = "financeiro", Description = "Educação e cálculos financeiros" },
-                new Category { Name = "Contabilidade", Slug = "contabilidade", Description = "Conceitos contábeis" });
-            await db.SaveChangesAsync();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var calculators = await db.Calculators.ToListAsync();
+        foreach (var calculator in calculators) {
+            if (await db.CalculationRuleSets.AnyAsync(rule => rule.CalculatorId == calculator.Id && rule.Version == "dev-1")) continue;
+
+            var rs = new CalculationRuleSet { CalculatorId = calculator.Id, Name = $"{calculator.Name} — regra de desenvolvimento", Version = "dev-1", ValidFrom = today.AddYears(-1), IsActive = true };
+            if (calculator.Slug == "ferias") rs.Parameters.Add(new RuleParameter { Key = "AdditionalVacationPercentage", Value = "0.333333", ValueType = ParameterValueType.Decimal, Description = "TODO: validar regra e fonte oficial antes da produção" });
+            db.CalculationRuleSets.Add(rs);
         }
-        if (!await db.Calculators.AnyAsync()) {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var items = new[] {
-                new Calculator { Name = "Férias", Slug = "ferias", Description = "Estimativa bruta e auditável de férias", Category = "Trabalhista" },
-                new Calculator { Name = "13º salário", Slug = "decimo-terceiro", Description = "Estimativa proporcional bruta", Category = "Trabalhista" },
-                new Calculator { Name = "Juros compostos", Slug = "juros-compostos", Description = "Simule a evolução de um investimento", Category = "Financeiro" }};
-            db.Calculators.AddRange(items); await db.SaveChangesAsync();
-            foreach (var calculator in items) {
-                var rs = new CalculationRuleSet { CalculatorId = calculator.Id, Name = $"{calculator.Name} — regra de desenvolvimento", Version = "dev-1", ValidFrom = today.AddYears(-1), IsActive = true };
-                if (calculator.Slug == "ferias") rs.Parameters.Add(new RuleParameter { Key = "AdditionalVacationPercentage", Value = "0.333333", ValueType = ParameterValueType.Decimal, Description = "TODO: validar regra e fonte oficial antes da produção" });
-                db.CalculationRuleSets.Add(rs);
-            }
+        if (db.ChangeTracker.HasChanges())
             await db.SaveChangesAsync();
-        }
         if (!await db.Articles.AnyAsync()) {
             var category = await db.Categories.FirstAsync(x => x.Slug == "financeiro");
             db.Articles.Add(new Article { Title = "[CONTEÚDO DE DEMONSTRAÇÃO] Entenda os juros compostos", Slug = "entenda-juros-compostos", Summary = "Uma introdução simples para testar a plataforma.", SimpleContent = "Juros compostos fazem o saldo acumulado participar do cálculo dos períodos seguintes.", TechnicalContent = "Modelo discreto: M = C(1+i)^n. Aportes periódicos exigem considerar a convenção de início ou fim do período.", CategoryId = category.Id, Status = ArticleStatus.Published, ReviewStatus = ReviewStatus.Pending, PublishedAt = DateTimeOffset.UtcNow, NeedsReviewAt = DateTimeOffset.UtcNow.AddMonths(3) });

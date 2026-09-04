@@ -59,6 +59,7 @@ builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connection, npgsql 
 builder.Services.AddIdentityCore<ApplicationUser>(o => { o.Password.RequiredLength = 10; o.Password.RequireNonAlphanumeric = true; o.Password.RequireUppercase = true; o.User.RequireUniqueEmail = true; o.Lockout.MaxFailedAccessAttempts = 5; })
     .AddRoles<IdentityRole<Guid>>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 builder.Services.AddScoped<IdentityStructuralSeed>();
+builder.Services.AddScoped<ReferenceDataSeed>();
 var authentication = builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -208,6 +209,9 @@ using (var scope = app.Services.CreateScope())
 {
     var identitySeed = scope.ServiceProvider.GetRequiredService<IdentityStructuralSeed>();
     await identitySeed.SeedAsync();
+
+    var referenceDataSeed = scope.ServiceProvider.GetRequiredService<ReferenceDataSeed>();
+    await referenceDataSeed.SeedAsync();
 }
 if (app.Environment.IsDevelopment())
     await DevelopmentSeed.ApplyAsync(app.Services, app.Configuration);
