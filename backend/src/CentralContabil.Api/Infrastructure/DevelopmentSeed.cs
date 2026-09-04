@@ -15,17 +15,6 @@ public static class DevelopmentSeed
         // Defesa adicional: este seed nunca deve produzir dados fora de Development.
         if (!environment.IsDevelopment()) return;
 
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var calculators = await db.Calculators.ToListAsync();
-        foreach (var calculator in calculators) {
-            if (await db.CalculationRuleSets.AnyAsync(rule => rule.CalculatorId == calculator.Id && rule.Version == "dev-1")) continue;
-
-            var rs = new CalculationRuleSet { CalculatorId = calculator.Id, Name = $"{calculator.Name} — regra de desenvolvimento", Version = "dev-1", ValidFrom = today.AddYears(-1), IsActive = true };
-            if (calculator.Slug == "ferias") rs.Parameters.Add(new RuleParameter { Key = "AdditionalVacationPercentage", Value = "0.333333", ValueType = ParameterValueType.Decimal, Description = "TODO: validar regra e fonte oficial antes da produção" });
-            db.CalculationRuleSets.Add(rs);
-        }
-        if (db.ChangeTracker.HasChanges())
-            await db.SaveChangesAsync();
         if (!await db.Articles.AnyAsync()) {
             var category = await db.Categories.FirstAsync(x => x.Slug == "financeiro");
             db.Articles.Add(new Article { Title = "[CONTEÚDO DE DEMONSTRAÇÃO] Entenda os juros compostos", Slug = "entenda-juros-compostos", Summary = "Uma introdução simples para testar a plataforma.", SimpleContent = "Juros compostos fazem o saldo acumulado participar do cálculo dos períodos seguintes.", TechnicalContent = "Modelo discreto: M = C(1+i)^n. Aportes periódicos exigem considerar a convenção de início ou fim do período.", CategoryId = category.Id, Status = ArticleStatus.Published, ReviewStatus = ReviewStatus.Pending, PublishedAt = DateTimeOffset.UtcNow, NeedsReviewAt = DateTimeOffset.UtcNow.AddMonths(3) });

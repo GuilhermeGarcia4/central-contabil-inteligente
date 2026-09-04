@@ -69,11 +69,11 @@ Com a API em `http://localhost:5042` e o Angular em `http://localhost:4200`, o c
 
 ## Dados de referência das calculadoras
 
-Na inicialização, depois das migrations, a API executa `ReferenceDataSeed` em todos os ambientes. Esse seed provisiona de forma idempotente apenas o catálogo técnico versionado no projeto: categorias e as calculadoras `ferias`, `decimo-terceiro` e `juros-compostos`. Registros existentes não são atualizados nem removidos.
+Na inicialização, depois das migrations, a API executa `ReferenceDataSeed` em todos os ambientes. Esse seed provisiona de forma idempotente as categorias, as calculadoras `ferias`, `decimo-terceiro` e `juros-compostos` e os três conjuntos `dev-1` que já existiam no projeto. A vigência inicial preservada é `2025-08-27`, observada nos dados locais existentes; o único parâmetro cadastrado é `AdditionalVacationPercentage=0.333333` para férias.
 
-Os únicos `CalculationRuleSet` encontrados no código e no banco local são regras `dev-1`, sem fonte associada, e a regra de férias contém uma observação explícita de validação pendente. Por isso elas permanecem no `DevelopmentSeed` e **não são publicadas automaticamente em Production**. Uma regra trabalhista deve ser cadastrada, associada à fonte conferida e ativada pelo administrador responsável antes de ficar elegível. No modelo atual, `IsActive` é o único estado de publicação do `CalculationRuleSet`; a verificação da fonte fica em `Sources.IsOfficial` e `Sources.LastVerifiedAt`.
+Não havia nenhuma `Source` versionada vinculada a esses conjuntos, portanto o seed mantém `SourceId` nulo e não inventa fonte, URL, data de verificação ou publicação. A observação de validação pendente do parâmetro de férias também é preservada literalmente. No modelo atual, `IsActive` é o único estado de publicação do `CalculationRuleSet`.
 
-Enquanto não houver regra ativa cuja vigência inclua a data UTC corrente, a API mantém a resposta segura HTTP 422. O seed não altera versões, vigências, fontes, parâmetros ou estados criados administrativamente.
+Registros identificados por `CalculatorId + Version` e parâmetros identificados por `RuleSetId + Key` não são sobrescritos. Assim, versões, vigências, fontes, parâmetros ou estados posteriormente administrados permanecem intactos.
 
 ### Conferência somente de leitura no Neon
 
@@ -83,6 +83,24 @@ O catálogo técnico esperado após o deploy pode ser consultado assim:
 SELECT "Id", "Name", "Slug", "Category", "IsActive"
 FROM central."Calculators"
 ORDER BY "Slug";
+```
+
+```sql
+SELECT "Id", "Name", "Url", "SourceType", "Publisher", "IsOfficial", "IsActive", "LastVerifiedAt"
+FROM central."Sources"
+ORDER BY "Name";
+```
+
+```sql
+SELECT "Id", "CalculatorId", "Name", "Version", "ValidFrom", "ValidUntil", "SourceId", "IsActive"
+FROM central."CalculationRuleSets"
+ORDER BY "CalculatorId", "ValidFrom", "Version";
+```
+
+```sql
+SELECT "Id", "RuleSetId", "Key", "Value", "ValueType", "Description"
+FROM central."RuleParameters"
+ORDER BY "RuleSetId", "Key";
 ```
 
 Para conferir regras, versões, vigências, estado, fonte e parâmetros sem modificar dados:
