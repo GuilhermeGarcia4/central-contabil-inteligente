@@ -43,14 +43,15 @@ npm start
 
 O PostgreSQL usa volume persistente, healthcheck e `restart: unless-stopped`. A API espera o banco ficar disponivel durante a inicializacao e repete operacoes transitorias, portanto se recupera de reinicios breves do container. Use `GET /health` para validar banco + API e `GET /health/live` para validar apenas o processo da API. O Docker Desktop ainda precisa estar em execucao; habilite a inicializacao automatica dele com o Windows para o banco subir apos reiniciar a maquina.
 
-O acesso de desenvolvimento fica unificado em `http://localhost:4200`. O Angular encaminha `/api`, `/health` e `/signin-google` internamente para `http://localhost:5042`; a API não fica exposta na rede local. Swagger técnico permanece local em `http://localhost:5042/swagger`.
+O acesso de desenvolvimento fica unificado em `http://localhost:4200`. O Angular encaminha `/api` e `/health` internamente para `http://localhost:5042`. O callback OAuth pertence à API e usa `http://localhost:5042/signin-google`. Swagger técnico permanece local em `http://localhost:5042/swagger`.
 
 ## Login com Google
 
 Crie um cliente OAuth do tipo **Aplicativo da Web** no Google Cloud e registre exatamente:
 
-- origem JavaScript autorizada: `http://localhost:4200`
-- URI de redirecionamento autorizada: `http://localhost:4200/signin-google`
+- URI de redirecionamento autorizada: `http://localhost:5042/signin-google`
+
+Não é necessário cadastrar uma origem JavaScript autorizada: o frontend não usa o SDK Google Identity Services. Para produção no Render e Netlify, consulte [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 Guarde as credenciais fora do repositório:
 

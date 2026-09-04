@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { apiUrl } from '../http/api-url';
 export interface User { id:string; email:string; displayName:string }
 interface LoginResult { accessToken:string; expiresAt:string; user:User }
 interface GoogleStatus { enabled:boolean; callbackUrl:string|null }
@@ -13,7 +14,7 @@ interface GoogleStatus { enabled:boolean; callbackUrl:string|null }
   accept(result:LoginResult){this.stateVersion++;this.accessToken=result.accessToken;this.user.set(result.user);this.roles.set(this.readRoles(result.accessToken))}
   register(displayName:string,email:string,password:string){return this.http.post('/api/v1/auth/register',{displayName,email,password})}
   googleStatus(){return this.http.get<GoogleStatus>('/api/v1/auth/google/status')}
-  loginWithGoogle(returnUrl='/minha-conta'){window.location.assign(`/api/v1/auth/google/start?returnUrl=${encodeURIComponent(returnUrl)}`)}
+  loginWithGoogle(returnUrl='/minha-conta'){window.location.assign(apiUrl(`/api/v1/auth/google/start?returnUrl=${encodeURIComponent(returnUrl)}`))}
   restore(){if(this.accessToken&&this.user())return Promise.resolve();return this.restorePromise??=this.restoreInternal()}
   private async restoreInternal(){const version=this.stateVersion;try{const r=await firstValueFrom(this.http.post<{accessToken:string}>('/api/v1/auth/refresh',{}, {withCredentials:true}));if(version!==this.stateVersion)return;this.accessToken=r.accessToken;this.roles.set(this.readRoles(r.accessToken));const payload=this.payload(r.accessToken);this.user.set({id:payload['sub'],email:payload['email'],displayName:payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']??payload['email']})}catch{/* visitor */}}
   logout(){this.http.post('/api/v1/auth/logout',{}, {withCredentials:true}).subscribe({complete:()=>{this.stateVersion++;this.restorePromise=null;this.accessToken=null;this.user.set(null);this.roles.set([]);void this.router.navigateByUrl('/')}})}

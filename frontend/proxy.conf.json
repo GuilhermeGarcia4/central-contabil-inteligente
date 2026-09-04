@@ -1,5 +1,4 @@
 {
-  "/api": { "target": "http://localhost:5042", "secure": false, "changeOrigin": false, "headers": { "X-Forwarded-Host": "localhost:4200", "X-Forwarded-Proto": "http" } },
-  "/health": { "target": "http://localhost:5042", "secure": false, "changeOrigin": false, "headers": { "X-Forwarded-Host": "localhost:4200", "X-Forwarded-Proto": "http" } },
-  "/signin-google": { "target": "http://localhost:5042", "secure": false, "changeOrigin": false, "headers": { "X-Forwarded-Host": "localhost:4200", "X-Forwarded-Proto": "http" } }
+  "/api": { "target": "http://localhost:5042", "secure": false, "changeOrigin": true },
+  "/health": { "target": "http://localhost:5042", "secure": false, "changeOrigin": true }
 }

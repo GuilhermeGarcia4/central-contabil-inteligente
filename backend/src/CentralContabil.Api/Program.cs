@@ -39,6 +39,17 @@ var jwtKey = builder.Configuration.GetRequiredJwtKey();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 1;
+    if (!builder.Environment.IsDevelopment())
+    {
+        // No Render, a conexao direta chega sempre pelo load balancer da plataforma.
+        options.KnownIPNetworks.Clear();
+        options.KnownProxies.Clear();
+    }
+});
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connection, npgsql =>
     npgsql.EnableRetryOnFailure(
@@ -69,7 +80,7 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
         options.SignInScheme = "External";
         options.ClientId = googleClientId;
         options.ClientSecret = googleClientSecret;
-        options.CallbackPath = "/signin-google";
+        options.CallbackPath = GoogleOAuthConfiguration.CallbackPath;
         options.CorrelationCookie.SameSite = SameSiteMode.Lax;
         options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         if (builder.Environment.IsDevelopment() &&
@@ -170,29 +181,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o => { o.SwaggerDoc("v1", new OpenApiInfo { Title = "Central Contábil Inteligente API", Version = "v1" }); o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { Name = "Authorization", In = ParameterLocation.Header, Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT" }); });
 
 var app = builder.Build();
-if (app.Environment.IsDevelopment())
+app.UseForwardedHeaders();
+app.Use(async (context, next) =>
 {
-    var forwarded = new ForwardedHeadersOptions
-    {
-        ForwardedHeaders = ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
-        ForwardLimit = 1
-    };
-    forwarded.KnownProxies.Add(System.Net.IPAddress.Loopback);
-    forwarded.KnownProxies.Add(System.Net.IPAddress.IPv6Loopback);
-    app.UseForwardedHeaders(forwarded);
-
-    var frontendUri = new Uri(builder.Configuration["FRONTEND_ORIGIN"] ?? "http://localhost:4200");
-    app.Use(async (context, next) =>
-    {
-        if (context.Request.Path.StartsWithSegments("/api/v1/auth/google") ||
-            context.Request.Path.StartsWithSegments("/signin-google"))
-        {
-            context.Request.Scheme = frontendUri.Scheme;
-            context.Request.Host = HostString.FromUriComponent(frontendUri);
-        }
-        await next();
-    });
-}
+    GoogleOAuthConfiguration.ApplyRenderOrigin(context.Request, builder.Configuration);
+    await next();
+});
 app.UseExceptionHandler();
 app.Use(async (context, next) => { context.Response.Headers.XContentTypeOptions = "nosniff"; context.Response.Headers.XFrameOptions = "DENY"; context.Response.Headers.ContentSecurityPolicy = context.Request.Path.StartsWithSegments("/swagger") ? "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'" : "default-src 'none'; frame-ancestors 'none'"; await next(); });
 if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }

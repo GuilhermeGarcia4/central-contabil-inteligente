@@ -63,9 +63,9 @@ public static class ApiEndpoints
             }
             http.Response.Cookies.Delete("refresh_token", RefreshCookieOptions(http)); return Results.NoContent();
         }).AllowAnonymous();
-        auth.MapGet("/google/status", (IConfiguration config) => Results.Ok(new {
+        auth.MapGet("/google/status", (HttpContext http, IConfiguration config) => Results.Ok(new {
             enabled = GoogleIsConfigured(config),
-            callbackUrl = GoogleIsConfigured(config) ? $"{FrontendOrigin(config)}/signin-google" : null
+            callbackUrl = GoogleIsConfigured(config) ? GoogleOAuthConfiguration.CallbackUrl(http.Request, config) : null
         })).AllowAnonymous();
         auth.MapGet("/google/start", (string? returnUrl, IConfiguration config) => {
             if (!GoogleIsConfigured(config)) return Results.Problem(statusCode: 503, title: "Login com Google ainda não configurado");
@@ -239,7 +239,9 @@ public static class ApiEndpoints
             HttpOnly = true,
             // Acesso LAN em Development usa HTTP. Production continua exigindo HTTPS.
             Secure = !environment.IsDevelopment(),
-            SameSite = SameSiteMode.Strict,
+            // Netlify e Render sao sites distintos em Production; o refresh precisa
+            // acompanhar a requisicao CORS feita pelo Angular depois do redirect final.
+            SameSite = environment.IsDevelopment() ? SameSiteMode.Strict : SameSiteMode.None,
             Path = "/api/v1/auth"
         };
     }
