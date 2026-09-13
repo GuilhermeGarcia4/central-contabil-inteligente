@@ -73,15 +73,18 @@ public static class FinanceEndpoints
         return Results.Ok(await summaries.GetAsync(userId, selectedYear, selectedMonth, ct));
     }
 
-    private static async Task<IResult> ListTransactions(int? year, int? month, FinancialTransactionType? type, Guid? categoryId,
+    private static async Task<IResult> ListTransactions(int? year, int? month, DateOnly? startDate, DateOnly? endDate, FinancialTransactionType? type, Guid? categoryId,
         FinancialPaymentMethod? paymentMethod, string? search, decimal? minAmount, decimal? maxAmount, int? page, int? pageSize, ClaimsPrincipal principal,
         AppDbContext db, FinancialRecurrenceService recurrences, CancellationToken ct)
     {
         var userId = UserId(principal); var selectedPage = Math.Max(page ?? 1, 1); var size = Math.Clamp(pageSize ?? 20, 1, 100);
         if (year is not null && (year < 2000 || year > 2200) || month is not null && (month < 1 || month > 12)) return Validation("period", "Mês ou ano inválido.");
-        if (year is not null && month is not null) await recurrences.MaterializeAsync(userId, new DateOnly(year.Value, month.Value, 1).AddMonths(1).AddDays(-1), ct);
+        if ((startDate is null) != (endDate is null) || startDate > endDate) return Validation("period", "Período personalizado inválido.");
+        if (endDate is not null) await recurrences.MaterializeAsync(userId, endDate.Value, ct);
+        else if (year is not null && month is not null) await recurrences.MaterializeAsync(userId, new DateOnly(year.Value, month.Value, 1).AddMonths(1).AddDays(-1), ct);
         var query = db.FinancialTransactions.AsNoTracking().Where(x => x.UserId == userId);
-        if (year is not null && month is not null) { var start = new DateOnly(year.Value, month.Value, 1); var end = start.AddMonths(1); query = query.Where(x => x.TransactionDate >= start && x.TransactionDate < end); }
+        if (startDate is not null && endDate is not null) query = query.Where(x => x.TransactionDate >= startDate && x.TransactionDate <= endDate);
+        else if (year is not null && month is not null) { var start = new DateOnly(year.Value, month.Value, 1); var end = start.AddMonths(1); query = query.Where(x => x.TransactionDate >= start && x.TransactionDate < end); }
         else if (year is not null) query = query.Where(x => x.TransactionDate.Year == year);
         if (type is not null) query = query.Where(x => x.Type == type);
         if (categoryId is not null) query = query.Where(x => x.CategoryId == categoryId);
@@ -149,9 +152,12 @@ public static class FinanceEndpoints
     private static async Task<IResult> CreateCategory(CategoryRequest body, ClaimsPrincipal principal, AppDbContext db, CancellationToken ct)
     {
         var userId = UserId(principal); var name = body.Name?.Trim(); if (string.IsNullOrWhiteSpace(name) || name.Length > 80) return Validation("name", "Nome obrigatório com até 80 caracteres.");
+        if (body.ChartColor is not null && !FinancialChartPalette.IsValid(body.ChartColor)) return Validation("chartColor", "Use uma cor no formato hexadecimal #RRGGBB.");
         if (await db.FinancialCategories.AnyAsync(x => x.UserId == userId && x.Type == body.Type && x.Name.ToLower() == name.ToLower(), ct)) return Results.Conflict(new { title = "Categoria já existente" });
         var item = new FinancialCategory { UserId = userId, Name = name, Type = body.Type, Icon = Clean(body.Icon), IsDefault = false };
-        db.FinancialCategories.Add(item); await db.SaveChangesAsync(ct); return Results.Created($"/api/v1/finance/categories/{item.Id}", new { item.Id, item.Name, item.Type, item.Icon, item.IsDefault, isCustom = true });
+        db.FinancialCategories.Add(item);
+        if (body.ChartColor is not null) db.FinancialCategoryChartPreferences.Add(new FinancialCategoryChartPreference { UserId = userId, CategoryId = item.Id, ChartColor = FinancialChartPalette.Normalize(body.ChartColor) });
+        await db.SaveChangesAsync(ct); return Results.Created($"/api/v1/finance/categories/{item.Id}", new { item.Id, item.Name, item.Type, item.Icon, item.IsDefault, isCustom = true, chartColor = body.ChartColor });
     }
 
     private static async Task<IResult> UpdateCategory(Guid id, CategoryRequest body, ClaimsPrincipal principal, AppDbContext db, CancellationToken ct)
@@ -198,6 +204,6 @@ public static class FinanceEndpoints
 
 public sealed record FinanceTransactionRow(Guid Id, Guid UserId, FinancialTransactionType Type, Guid CategoryId, string CategoryName, string Description, decimal Amount, DateOnly TransactionDate, FinancialPaymentMethod PaymentMethod, bool IsRecurring, Guid? RecurrenceId, Guid? InstallmentPlanId, int? InstallmentNumber, int? InstallmentCount, string? Notes, DateTimeOffset CreatedAt, Guid? CreditCardId = null, Guid? AccountId = null);
 public sealed record TransactionEditRequest(FinancialTransactionType Type, Guid CategoryId, string Description, decimal Amount, DateOnly TransactionDate, FinancialPaymentMethod PaymentMethod, bool IsRecurring, DateOnly? RecurrenceEndDate, string? Notes, bool IsInstallment = false, int? InstallmentCount = null, DateOnly? FirstInstallmentDate = null, Guid? CreditCardId = null, Guid? AccountId = null);
-public sealed record CategoryRequest(string Name, FinancialTransactionType Type, string? Icon);
+public sealed record CategoryRequest(string Name, FinancialTransactionType Type, string? Icon, string? ChartColor = null);
 public sealed record RecurrenceRequest(FinancialTransactionType Type, Guid CategoryId, string Description, decimal Amount, FinancialPaymentMethod PaymentMethod, DateOnly StartDate, DateOnly? EndDate, bool IsActive, string? Notes);
 public sealed record CategorySuggestionRequest(FinancialTransactionType Type, string Description, string? Notes);

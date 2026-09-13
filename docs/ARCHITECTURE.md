@@ -1,5 +1,9 @@
 # Arquitetura
 
+## V8 — dashboard financeiro
+
+`FinanceOverviewService` agrega transações por intervalo e categoria no PostgreSQL e compõe comparação, série mensal, planejamento, compromissos e metas em um contrato. `FinancialCategoryChartPreferences` guarda cores por usuário e categoria. O Angular usa componentes próprios de donut e barras, sem biblioteca gráfica externa.
+
 ## Monólito modular evolutivo
 
 A Central é um deploy de API, um frontend e um PostgreSQL. V2/V3 ampliam o monólito modular sem microsserviços, brokers ou consistência distribuída prematuros.

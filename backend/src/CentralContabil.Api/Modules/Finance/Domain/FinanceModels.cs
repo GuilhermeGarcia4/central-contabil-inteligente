@@ -148,6 +148,14 @@ public sealed class FinancialCategoryPreference : AuditableEntity
     public int UsageCount { get; set; } = 1;
 }
 
+public sealed class FinancialCategoryChartPreference : AuditableEntity
+{
+    public Guid UserId { get; set; }
+    public Guid CategoryId { get; set; }
+    public FinancialCategory Category { get; set; } = null!;
+    public required string ChartColor { get; set; }
+}
+
 public sealed class MonthlyBudget : AuditableEntity
 {
     public Guid UserId { get; set; }

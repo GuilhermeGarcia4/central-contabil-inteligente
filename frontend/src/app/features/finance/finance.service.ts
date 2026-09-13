@@ -4,10 +4,17 @@ import { FINANCE_PAYMENT_LABELS, FINANCE_TRANSACTION_LABELS } from './finance-la
 
 export type TransactionType = 'Income'|'Expense';
 export type PaymentMethod = 'Cash'|'Pix'|'DebitCard'|'CreditCard'|'BankTransfer'|'Boleto'|'Other';
-export interface FinanceCategory { id:string; name:string; type:TransactionType; icon:string|null; isDefault:boolean; isCustom:boolean }
-export interface CategorySlice { categoryId:string; categoryName:string; amount:number; percentage:number }
+export interface FinanceCategory { id:string; name:string; type:TransactionType; icon:string|null; isDefault:boolean; isCustom:boolean; chartColor?:string; hasCustomColor?:boolean }
+export interface CategorySlice { categoryId:string; categoryName:string; amount:number; percentage:number; color?:string; hasCustomColor?:boolean }
 export interface FinanceTransaction { id:string; type:TransactionType; categoryId:string; categoryName:string; description:string; amount:number; transactionDate:string; paymentMethod:PaymentMethod; isRecurring:boolean; recurrenceId:string|null; installmentPlanId:string|null; installmentNumber:number|null; installmentCount:number|null; notes:string|null; createdAt:string }
 export interface FinanceSummary { year:number; month:number; totalIncome:number; totalExpenses:number; balance:number; incomeCommitmentPercentage:number|null; transactionCount:number; expensesByCategory:CategorySlice[]; incomeByCategory:CategorySlice[]; comparison:{incomePercentage:number|null;expensePercentage:number|null;balancePercentage:number|null}; latestTransactions:FinanceTransaction[] }
+export interface FinanceOverviewComparison {incomeDifference:number;expenseDifference:number;balanceDifference:number;incomePercentage:number|null;expensePercentage:number|null;balancePercentage:number|null;largestIncreaseCategory:string|null;largestIncreaseAmount:number|null;largestReductionCategory:string|null;largestReductionAmount:number|null}
+export interface FinanceOverviewMonth {year:number;month:number;income:number;expenses:number;balance:number}
+export interface FinanceOverviewBudget {categoryId:string;categoryName:string;planned:number;used:number;percentage:number}
+export interface FinanceOverviewPlanning {planned:number;used:number;remaining:number;nearLimits:FinanceOverviewBudget[]}
+export interface FinanceOverviewCommitment {id:string;description:string;amount:number;dueDate:string;kind:string}
+export interface FinanceOverviewGoal {id:string;name:string;currentAmount:number;targetAmount:number;percentage:number}
+export interface FinanceOverview {startDate:string;endDate:string;totalEntries:number;totalExits:number;balance:number;entriesByCategory:CategorySlice[];exitsByCategory:CategorySlice[];comparison:FinanceOverviewComparison;evolution:FinanceOverviewMonth[];planning:FinanceOverviewPlanning;upcomingCommitments:FinanceOverviewCommitment[];goals:FinanceOverviewGoal[]}
 export interface TransactionPayload { type:TransactionType; categoryId:string; description:string; amount:number; transactionDate:string; paymentMethod:PaymentMethod; isRecurring:boolean; recurrenceEndDate:string|null; notes:string|null; isInstallment:boolean; installmentCount:number|null; firstInstallmentDate:string|null; creditCardId:string|null; accountId:string|null }
 export interface Suggestion { categoryId:string; categoryName:string; confidence:number; source:string }
 export interface BudgetProgress { id:string;categoryId:string;categoryName:string;plannedAmount:number;usedAmount:number;remainingAmount:number;percentage:number;isExceeded:boolean }
@@ -49,9 +56,13 @@ export interface ConversationMessage { role:'user'|'assistant';content:string;so
 export class FinanceService {
   private readonly http=inject(HttpClient); private readonly base='/api/v1/finance';
   summary(year:number,month:number){return this.http.get<FinanceSummary>(`${this.base}/summary`,{params:{year,month}})}
+  overview(startDate:string,endDate:string){return this.http.get<FinanceOverview>(`${this.base}/overview`,{params:{startDate,endDate}})}
   categories(){return this.http.get<FinanceCategory[]>(`${this.base}/categories`)}
-  createCategory(name:string,type:TransactionType){return this.http.post<FinanceCategory>(`${this.base}/categories`,{name,type,icon:null})}
-  updateCategory(id:string,name:string,type:TransactionType){return this.http.put<FinanceCategory>(`${this.base}/categories/${id}`,{name,type,icon:null})}
+  categoryColors(){return this.http.get<FinanceCategory[]>(`${this.base}/category-colors`)}
+  saveCategoryColor(categoryId:string,chartColor:string){return this.http.put<{categoryId:string;chartColor:string;hasCustomColor:boolean}>(`${this.base}/categories/${categoryId}/chart-color`,{chartColor})}
+  restoreCategoryColor(categoryId:string){return this.http.delete<{categoryId:string;chartColor:string;hasCustomColor:boolean}>(`${this.base}/categories/${categoryId}/chart-color`)}
+  createCategory(name:string,type:TransactionType,chartColor?:string){return this.http.post<FinanceCategory>(`${this.base}/categories`,{name,type,icon:null,chartColor:chartColor||null})}
+  updateCategory(id:string,name:string,type:TransactionType){return this.http.put<FinanceCategory>(`${this.base}/categories/${id}`,{name,type,icon:null,chartColor:null})}
   removeCategory(id:string){return this.http.delete<void>(`${this.base}/categories/${id}`)}
   transactions(filters:Record<string,string|number|undefined>){let params=new HttpParams();for(const [key,value] of Object.entries(filters))if(value!==undefined&&value!=='')params=params.set(key,String(value));return this.http.get<{items:FinanceTransaction[];total:number;page:number;pageSize:number}>(`${this.base}/transactions`,{params})}
   create(payload:TransactionPayload){return this.http.post<FinanceTransaction>(`${this.base}/transactions`,payload)}

@@ -56,6 +56,15 @@ Objetivo: dar ao usuário inteligência sobre as próprias finanças e um assist
 
 Detalhamento completo em `docs/V7_PLAN.md`.
 
+## V8 — Visão financeira e personalização — implementado
+
+- Overview agregado por intervalo, Entradas, Saídas e Quanto sobrou. ✅
+- Donuts, principais categorias e paleta acessível. ✅
+- Comparação com período anterior e evolução mensal. ✅
+- Cores isoladas por usuário e restauração automática. ✅
+- Planejamento, compromissos e metas no overview. ✅
+- Seleção e ordenação das seções: evolução posterior.
+
 ## Pendências operacionais contínuas
 
 - Curadoria e revisão profissional das regras trabalhistas demonstrativas.

@@ -110,6 +110,10 @@ Configuração opcional de provider externo: `AI_PROVIDER=gemini` usa `GEMINI_AP
 
 Em desenvolvimento, o Gemini é o provider temporário sugerido. Use dados fictícios no free tier. Copie `.env.example` para `.env`, preencha apenas a chave local e reinicie o backend. O modelo de chat padrão é `gemini-3.7-flash`, o embedding é `gemini-embedding-2` e a saída é reduzida para 384 dimensões para permanecer compatível com o `vector(384)` existente.
 
+## V8 — Visão financeira
+
+A Visão Geral financeira oferece filtros de período, cards de Entradas/Saídas/Quanto sobrou, donuts acessíveis por categoria, comparação, evolução mensal, planejamento, compromissos, metas e cores privadas por usuário. O endpoint agregado é `GET /api/v1/finance/overview`; detalhes em [docs/V8.md](docs/V8.md).
+
 ## Testes e build
 
 ```powershell

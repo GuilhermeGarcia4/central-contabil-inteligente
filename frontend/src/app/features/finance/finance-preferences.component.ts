@@ -1,38 +1,23 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FinanceNavComponent } from './finance-nav.component';
-import { ExplanationProfile, FinanceService, UserPreferenceView } from './finance.service';
+import { FinanceCategory, FinanceService, UserPreferenceView } from './finance.service';
 
 @Component({imports:[FormsModule,FinanceNavComponent],template:`
-<section class="page finance-page">
-  <app-finance-nav/>
-  <div class="finance-heading"><div><span class="eyebrow">MINHA CONTA</span><h1>Preferências</h1><p class="lead">Como você prefere ver as informações e quais alertas deseja receber.</p></div></div>
-  @if(loading()){<div class="notice" role="status">Carregando preferências...</div>}
-  @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
-  @if(pref();as p){
-    <form class="prefs" (ngSubmit)="save()">
-      <fieldset><legend>Perfil de explicação</legend><p class="hint">Como você prefere ver as informações no assistente, artigos e finanças?</p>
-        <label class="radio"><input type="radio" name="profile" [value]="'Simple'" [(ngModel)]="p.explanationProfile"><span><b>Simples</b><small>Linguagem fácil, explicações curtas e exemplos.</small></span></label>
-        <label class="radio"><input type="radio" name="profile" [value]="'Detailed'" [(ngModel)]="p.explanationProfile"><span><b>Detalhado</b><small>Detalhes, termos técnicos, fórmulas, fontes e vigência.</small></span></label>
-        <label class="radio"><input type="radio" name="profile" [value]="'Both'" [(ngModel)]="p.explanationProfile"><span><b>Os dois</b><small>Resumo simples com opção de ver os detalhes.</small></span></label>
-      </fieldset>
-      <fieldset><legend>Alertas</legend><p class="hint">Escolha quais alertas deseja ver na Central de alertas.</p>
-        <label class="check"><input type="checkbox" [(ngModel)]="p.alertBills" name="alertBills"><span>Contas a pagar próximas</span></label>
-        <label class="check"><input type="checkbox" [(ngModel)]="p.alertInvoices" name="alertInvoices"><span>Faturas de cartão</span></label>
-        <label class="check"><input type="checkbox" [(ngModel)]="p.alertBudget" name="alertBudget"><span>Planejamento (orçamento)</span></label>
-        <label class="check"><input type="checkbox" [(ngModel)]="p.alertGoals" name="alertGoals"><span>Metas</span></label>
-        <label class="check"><input type="checkbox" [(ngModel)]="p.alertInstallments" name="alertInstallments"><span>Parcelas futuras</span></label>
-        <label class="check"><input type="checkbox" [(ngModel)]="p.alertWeeklySummary" name="alertWeeklySummary"><span>Resumo semanal</span></label>
-        <label class="check"><input type="checkbox" [(ngModel)]="p.alertMonthlySummary" name="alertMonthlySummary"><span>Resumo mensal</span></label>
-      </fieldset>
-      <button class="primary" [disabled]="saving()">{{saving()?'Salvando...':'Salvar preferências'}}</button>
-      @if(saved()){<p class="saved" role="status">Preferências salvas.</p>}
-    </form>
-  }
-</section>`,styles:[`.finance-page{max-width:820px}.finance-heading h1{margin-bottom:8px}.prefs{display:grid;gap:24px}.prefs fieldset{border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:grid;gap:12px;background:#fff}.prefs legend{font-weight:800;color:var(--navy);padding:0 6px}.hint{color:var(--muted);margin:0 0 6px}.radio,.check{display:flex;align-items:flex-start;gap:12px;padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer}.radio span{display:grid}.radio small{color:var(--muted)}.check span{color:var(--navy)}.prefs .primary{justify-self:start}.saved{color:var(--green);font-weight:600}`]})
+<section class="page finance-page"><app-finance-nav/><div class="finance-heading"><div><span class="eyebrow">MINHA CONTA</span><h1>Preferências</h1><p class="lead">Escolha como ver suas informações e personalize seus gráficos.</p></div></div>
+  @if(loading()){<div class="notice" role="status">Carregando preferências...</div>}@if(error()){<div class="notice error" role="alert">{{error()}}</div>}
+  @if(pref();as p){<form class="prefs" (ngSubmit)="save()">
+    <fieldset><legend>Perfil de explicação</legend><label class="radio"><input type="radio" name="profile" value="Simple" [(ngModel)]="p.explanationProfile"><span><b>Simples</b><small>Explicações curtas e diretas.</small></span></label><label class="radio"><input type="radio" name="profile" value="Detailed" [(ngModel)]="p.explanationProfile"><span><b>Detalhado</b><small>Mais contexto, percentuais e comparações.</small></span></label><label class="radio"><input type="radio" name="profile" value="Both" [(ngModel)]="p.explanationProfile"><span><b>Os dois</b><small>Resumo simples com detalhes disponíveis.</small></span></label></fieldset>
+    <fieldset><legend>Alertas</legend><label class="check"><input type="checkbox" [(ngModel)]="p.alertBills" name="alertBills">Contas próximas</label><label class="check"><input type="checkbox" [(ngModel)]="p.alertInvoices" name="alertInvoices">Faturas</label><label class="check"><input type="checkbox" [(ngModel)]="p.alertBudget" name="alertBudget">Planejamento</label><label class="check"><input type="checkbox" [(ngModel)]="p.alertGoals" name="alertGoals">Metas</label><label class="check"><input type="checkbox" [(ngModel)]="p.alertInstallments" name="alertInstallments">Parcelas</label><label class="check"><input type="checkbox" [(ngModel)]="p.alertWeeklySummary" name="alertWeeklySummary">Resumo semanal</label><label class="check"><input type="checkbox" [(ngModel)]="p.alertMonthlySummary" name="alertMonthlySummary">Resumo mensal</label></fieldset>
+    <fieldset><legend>Cores das categorias</legend><p class="hint">A cor padrão é automática. Sua escolha vale somente para a sua conta.</p>@for(category of categories();track category.id){<div class="color-row"><span class="preview" [style.background]="category.chartColor" aria-hidden="true"></span><b>{{category.name}}</b><small>{{category.type==='Income'?'Entrada':'Saída'}}</small><input type="color" [value]="category.chartColor" [attr.aria-label]="'Cor de '+category.name" (change)="changeColor(category,$event)"><code>{{category.chartColor}}</code><button type="button" (click)="restoreColor(category)" [disabled]="!category.hasCustomColor">Restaurar padrão</button></div>}</fieldset>
+    <button class="primary" [disabled]="saving()">{{saving()?'Salvando...':'Salvar preferências'}}</button>@if(saved()){<p class="saved" role="status">Preferências salvas.</p>}
+  </form>}
+</section>`,styles:[`.finance-page{max-width:920px}.finance-heading h1{margin-bottom:8px}.prefs{display:grid;gap:24px}.prefs fieldset{border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:grid;gap:12px;background:#fff}.prefs legend{font-weight:800;color:var(--navy);padding:0 6px}.hint{color:var(--muted)}.radio,.check{display:flex;align-items:flex-start;gap:12px;padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer}.radio span{display:grid}.radio small{color:var(--muted)}.prefs .primary{justify-self:start}.saved{color:var(--green);font-weight:600}.color-row{display:grid;grid-template-columns:18px 1fr 70px 48px 76px auto;align-items:center;gap:10px;padding:9px;border-bottom:1px solid var(--line)}.preview{width:18px;height:18px;border-radius:50%;border:1px solid #777}.color-row small{color:var(--muted)}.color-row input{width:42px;height:32px;border:0;background:none;padding:0}.color-row code{padding:0;background:none;font-size:12px}.color-row button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:7px;cursor:pointer}.color-row button:disabled{opacity:.45}@media(max-width:650px){.color-row{grid-template-columns:18px 1fr 48px}.color-row small,.color-row code{display:none}.color-row button{grid-column:2/-1}}`]})
 export class FinancePreferencesComponent{
-  private readonly finance=inject(FinanceService);
-  readonly pref=signal<UserPreferenceView|null>(null);readonly loading=signal(true);readonly error=signal('');readonly saving=signal(false);readonly saved=signal(false);
-  constructor(){this.finance.preferences().subscribe({next:x=>{this.pref.set(x);this.loading.set(false)},error:()=>{this.loading.set(false);this.error.set('Não foi possível carregar as preferências.')}})}
+  private readonly finance=inject(FinanceService);readonly pref=signal<UserPreferenceView|null>(null);readonly categories=signal<FinanceCategory[]>([]);readonly loading=signal(true);readonly error=signal('');readonly saving=signal(false);readonly saved=signal(false);
+  constructor(){this.finance.preferences().subscribe({next:x=>{this.pref.set(x);this.loading.set(false)},error:()=>{this.loading.set(false);this.error.set('Não foi possível carregar as preferências.')}});this.loadColors()}
   save(){const p=this.pref();if(!p)return;this.saving.set(true);this.saved.set(false);this.finance.savePreferences(p).subscribe({next:x=>{this.pref.set(x);this.saving.set(false);this.saved.set(true)},error:()=>{this.saving.set(false);this.error.set('Não foi possível salvar as preferências.')}})}
+  changeColor(category:FinanceCategory,event:Event){this.finance.saveCategoryColor(category.id,(event.target as HTMLInputElement).value).subscribe({next:()=>this.loadColors(),error:()=>this.error.set('Não foi possível salvar a cor da categoria.')})}
+  restoreColor(category:FinanceCategory){this.finance.restoreCategoryColor(category.id).subscribe({next:()=>this.loadColors(),error:()=>this.error.set('Não foi possível restaurar a cor padrão.')})}
+  private loadColors(){this.finance.categoryColors().subscribe({next:x=>this.categories.set(x),error:()=>this.error.set('Não foi possível carregar as cores das categorias.')})}
 }

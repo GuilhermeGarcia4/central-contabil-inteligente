@@ -55,6 +55,12 @@ Uma evolução híbrida poderá consultar um classificador externo apenas quando
 - `POST /category-suggestion`
 
 Todos exigem JWT.
+
+## V8 — overview por período
+
+`GET /overview` aceita `startDate` e `endDate` e concentra totais, categorias, comparação, evolução, planejamento, compromissos e metas. A consulta filtra o `UserId` das claims e agrega transações no PostgreSQL.
+
+As cores usam `FinancialCategoryChartPreference`, separada da categorização textual. Categorias globais continuam imutáveis; somente a preferência privada do usuário é gravada. A migration incremental é `AddFinancialDashboardV8`.
 # V5 — planejamento financeiro pessoal
 
 Além do histórico e dashboard da V4, a V5 inclui orçamento mensal por categoria, metas com aportes, compromissos parcelados, gestão de recorrências, previsão, relatório mensal e exportação XLSX.

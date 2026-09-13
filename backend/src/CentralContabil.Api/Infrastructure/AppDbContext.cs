@@ -35,6 +35,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<FinancialTransaction> FinancialTransactions => Set<FinancialTransaction>();
     public DbSet<FinancialRecurrence> FinancialRecurrences => Set<FinancialRecurrence>();
     public DbSet<FinancialCategoryPreference> FinancialCategoryPreferences => Set<FinancialCategoryPreference>();
+    public DbSet<FinancialCategoryChartPreference> FinancialCategoryChartPreferences => Set<FinancialCategoryChartPreference>();
     public DbSet<MonthlyBudget> MonthlyBudgets => Set<MonthlyBudget>();
     public DbSet<FinancialGoal> FinancialGoals => Set<FinancialGoal>();
     public DbSet<FinancialGoalContribution> FinancialGoalContributions => Set<FinancialGoalContribution>();
@@ -106,6 +107,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<FinancialCategoryPreference>().Property(x => x.NormalizedText).HasMaxLength(180);
         builder.Entity<FinancialCategoryPreference>().HasIndex(x => new { x.UserId, x.Type, x.NormalizedText }).IsUnique();
         builder.Entity<FinancialCategoryPreference>().HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<FinancialCategoryChartPreference>().Property(x => x.ChartColor).HasMaxLength(7);
+        builder.Entity<FinancialCategoryChartPreference>().HasIndex(x => new { x.UserId, x.CategoryId }).IsUnique();
+        builder.Entity<FinancialCategoryChartPreference>().HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Cascade);
         builder.Entity<FinancialTransaction>().HasIndex(x => new { x.InstallmentPlanId, x.InstallmentNumber }).IsUnique().HasFilter("\"InstallmentPlanId\" IS NOT NULL");
         builder.Entity<FinancialTransaction>().HasOne(x => x.InstallmentPlan).WithMany(x => x.Transactions).HasForeignKey(x => x.InstallmentPlanId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<MonthlyBudget>().Property(x => x.PlannedAmount).HasPrecision(18, 2);

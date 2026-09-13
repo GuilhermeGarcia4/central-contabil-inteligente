@@ -151,6 +151,7 @@ builder.Services.AddScoped<NetWorthService>();
 builder.Services.AddScoped<FinanceCalendarService>();
 builder.Services.AddScoped<AnnualReportService>();
 builder.Services.AddScoped<FinanceInsightService>();
+builder.Services.AddScoped<FinanceOverviewService>();
 builder.Services.AddScoped<FinancialAlertService>();
 builder.Services.AddScoped<FinancialDuplicateDetectionService>();
 builder.Services.AddScoped<FinancialImportService>();
@@ -203,7 +204,7 @@ app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
         ? Results.Ok(new { status = "healthy", database = "connected", utc = DateTimeOffset.UtcNow })
         : Results.Json(new { status = "unhealthy", database = "disconnected", utc = DateTimeOffset.UtcNow }, statusCode: StatusCodes.Status503ServiceUnavailable);
 }).AllowAnonymous();
-app.MapApi(); app.MapV2Api(); app.MapV3Api(); app.MapFinanceApi(); app.MapFinanceV5Api(); app.MapFinanceV6Api(); app.MapFinanceV7Api();
+app.MapApi(); app.MapV2Api(); app.MapV3Api(); app.MapFinanceApi(); app.MapFinanceV5Api(); app.MapFinanceV6Api(); app.MapFinanceV7Api(); app.MapFinanceV8Api();
 await DatabaseMigration.ApplyAsync(app.Services);
 using (var scope = app.Services.CreateScope())
 {
