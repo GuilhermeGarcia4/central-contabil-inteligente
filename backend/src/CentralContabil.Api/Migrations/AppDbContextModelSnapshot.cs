@@ -1870,6 +1870,43 @@ namespace CentralContabil.Api.Migrations
                     b.ToTable("RuleParameters", "central");
                 });
 
+            modelBuilder.Entity("CentralContabil.Api.Modules.Shared.Domain.SavedSimulation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("InputJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("ResultJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("SavedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "SavedAt");
+
+                    b.ToTable("SavedSimulations", "central");
+                });
+
             modelBuilder.Entity("CentralContabil.Api.Modules.Shared.Domain.Source", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2302,6 +2339,15 @@ namespace CentralContabil.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("RuleSet");
+                });
+
+            modelBuilder.Entity("CentralContabil.Api.Modules.Shared.Domain.SavedSimulation", b =>
+                {
+                    b.HasOne("CentralContabil.Api.Modules.Shared.Domain.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

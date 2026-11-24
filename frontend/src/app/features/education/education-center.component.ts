@@ -89,6 +89,8 @@ const isDemonstrationContent = (article: ArticleCard): boolean =>
           <div class="education-cards tools">
             <a class="education-card" routerLink="/comparador-propostas"><h3>Comparar propostas</h3><p>Compare CET, custo total, parcelas e encargos informados pelos bancos.</p><span class="education-card-link">Comparar →</span></a>
             <a class="education-card" routerLink="/calculadoras"><h3>Central de calculadoras</h3><p>Juros, financiamentos, investimentos, orçamento mensal e dívidas.</p><span class="education-card-link">Abrir ferramentas →</span></a>
+            <a class="education-card" routerLink="/indicadores-economicos"><h3>Indicadores econômicos</h3><p>Consulte séries históricas publicadas pelo Banco Central.</p><span class="education-card-link">Consultar →</span></a>
+            <a class="education-card" routerLink="/glossario"><h3>Glossário financeiro</h3><p>Entenda termos usados nos artigos, simuladores e comparações.</p><span class="education-card-link">Consultar →</span></a>
             <a class="education-card" routerLink="/calculadoras/juros-compostos"><h3>Juros compostos</h3><p>Projete o crescimento do capital com aportes mensais.</p><span class="education-card-link">Simular →</span></a>
             <a class="education-card" routerLink="/calculadoras/ferias"><h3>Férias</h3><p>Consulte uma estimativa bruta de remuneração e abono.</p><span class="education-card-link">Calcular →</span></a>
             <a class="education-card" routerLink="/calculadoras/decimo-terceiro"><h3>13º salário</h3><p>Estime o valor bruto proporcional aos meses trabalhados.</p><span class="education-card-link">Calcular →</span></a>

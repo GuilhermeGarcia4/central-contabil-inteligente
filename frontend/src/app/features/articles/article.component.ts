@@ -65,6 +65,8 @@ type ArticleContentBlock =
             </a>
           } @empty { <p>Este artigo ainda não possui fontes cadastradas.</p> }
         </aside>
+        <section class="article-tools" aria-label="Ferramentas relacionadas"><h2>Continue com ferramentas</h2><a [routerLink]="relatedCalculator(article.slug)">Abrir calculadora relacionada</a><a routerLink="/comparador-propostas">Comparar propostas informadas</a><a routerLink="/glossario">Consultar o glossário</a></section>
+        <section class="quick-quiz" aria-labelledby="quiz-title"><h2 id="quiz-title">Pergunta rápida</h2><p>O conteúdo ou a regra podem não se aplicar igualmente a todos os perfis. O que fazer antes de tomar uma decisão?</p><div role="group" aria-label="Escolha uma resposta"><button type="button" (click)="quizAnswer.set('Confiar apenas no resumo')">Confiar apenas no resumo</button><button type="button" (click)="quizAnswer.set('Conferir a fonte e as premissas do próprio caso')">Conferir a fonte e as premissas do próprio caso</button><button type="button" (click)="quizAnswer.set('Tratar uma estimativa como garantia')">Tratar uma estimativa como garantia</button></div>@if(quizAnswer()){<p role="status">{{quizAnswer()==='Conferir a fonte e as premissas do próprio caso'?'Correto. Verifique a fonte, a data e se os parâmetros se aplicam.':'Reveja a fonte e as premissas antes de usar a estimativa.'}}</p>}</section>
         @if (related().length) {
           <section class="related" aria-labelledby="related-title">
             <span class="eyebrow">CONTINUE APRENDENDO</span>
@@ -83,6 +85,7 @@ type ArticleContentBlock =
   `,
   styles: [`
     .article{max-width:860px}
+    .article-tools,.quick-quiz{display:grid;gap:10px;margin-top:30px;padding:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.article-tools a{color:var(--blue);font-weight:700}.quick-quiz button{margin:4px;padding:10px;border:1px solid var(--line);border-radius:8px;background:white;text-align:left;cursor:pointer}
     .back-link{display:inline-block;margin-bottom:28px;color:var(--blue);font-weight:700}
     .article-meta{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;color:var(--muted);font-size:13px}
     .article-meta span+span:before{content:'·';margin-right:12px}
@@ -119,6 +122,17 @@ export class ArticleComponent {
   readonly technical = signal(false);
   readonly related = signal<ArticleSummary[]>([]);
   readonly error = signal('');
+  readonly quizAnswer = signal('');
+
+  relatedCalculator(slug: string): string {
+    const key=slug.toLowerCase();
+    if(key.includes('cartao')||key.includes('credito')||key.includes('emprestimo')) return '/calculadoras/cartao-credito';
+    if(key.includes('invest')||key.includes('poupan')||key.includes('renda')) return '/calculadoras/rendimento-liquido';
+    if(key.includes('divida')||key.includes('negocia')) return '/calculadoras/renegociacao-divida';
+    if(key.includes('consor')) return '/calculadoras/consorcio-financiamento';
+    if(key.includes('juros')||key.includes('financi')) return '/calculadoras/financiamento-fixas';
+    return '/calculadoras';
+  }
 
   ngOnInit(): void {
     this.http.get<Article>(`/api/v1/articles/${this.slug()}`).subscribe({

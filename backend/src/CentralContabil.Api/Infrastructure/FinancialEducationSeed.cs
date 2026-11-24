@@ -43,7 +43,9 @@ public sealed class FinancialEducationSeed(AppDbContext db, ILogger<FinancialEdu
         new("Aprender Valor — educação financeira para crianças e jovens", "https://www.bcb.gov.br/cidadaniafinanceira/ensinando-criancas-adolescentes", "Banco Central do Brasil", SourceType.OfficialPortal),
         new("Aprender Valor — perguntas frequentes", "https://www.bcb.gov.br/meubc/faqs/s/aprender-valor", "Banco Central do Brasil", SourceType.OfficialPortal),
         new("Taxas de juros médias por modalidade", "https://www.bcb.gov.br/estatisticas/txjuros", "Banco Central do Brasil", SourceType.OfficialPortal),
-        new("IPVA — orientações da Secretaria da Fazenda de Pernambuco", "https://www.sefaz.pe.gov.br/Servicos/IPVA/Paginas/Perguntas-e-Respostas.aspx", "Secretaria da Fazenda de Pernambuco", SourceType.OfficialPortal)
+        new("IPVA — orientações da Secretaria da Fazenda de Pernambuco", "https://www.sefaz.pe.gov.br/Servicos/IPVA/Paginas/Perguntas-e-Respostas.aspx", "Secretaria da Fazenda de Pernambuco", SourceType.OfficialPortal),
+        new("compound-interest-bcb", "Calculadora do Cidadão — juros compostos", "https://www.bcb.gov.br/meubc/calculadoradocidadao", "Banco Central do Brasil", SourceType.OfficialPortal),
+        new("compound-interest-learn", "Aprender Valor — fórmula de juros compostos", "https://www.bcb.gov.br/content/config/aprendervalor/docs_aprender_valor/OLITEF_2024_CADERNO_ESTUDANTE_VFinal.pdf", "Banco Central do Brasil", SourceType.GovernmentPublication)
     ];
 
     private static readonly ArticleDefinition[] Articles =
@@ -730,7 +732,49 @@ public sealed class FinancialEducationSeed(AppDbContext db, ILogger<FinancialEdu
             added++;
         }
 
-        if (db.ChangeTracker.HasChanges())
+        var sampleArticle = await db.Articles.Include(x => x.ArticleSources).FirstOrDefaultAsync(x => x.Slug == "entenda-juros-compostos", cancellationToken);
+        if (sampleArticle is not null && sampleArticle.ReviewStatus != ReviewStatus.Reviewed)
+        {
+            sampleArticle.Title = "Juros compostos: como o tempo afeta o saldo";
+            sampleArticle.Summary = "Entenda como os juros de cada período se incorporam ao saldo e por que prazo, taxa e momento dos aportes alteram uma simulação.";
+            sampleArticle.SimpleContent = """
+                ## Como funcionam
+                No regime composto, os juros de cada período são incorporados ao saldo. No período seguinte, o cálculo usa o saldo atualizado. Para um capital sem novos aportes, M = C × (1 + i)^n, em que C é o capital inicial, i a taxa por período e n o número de períodos.
+
+                ## Exemplo educativo
+                Com R$ 1.000, taxa constante de 1% ao mês e 12 meses, a fórmula resulta em aproximadamente R$ 1.126,83 antes de impostos e custos. É uma conta hipotética: taxas de investimentos e crédito não são garantidas e podem ter custos e regras próprios.
+
+                ## Aportes regulares
+                Aportes ao início do mês rendem por mais um período do que depósitos ao fim. Confira qual convenção o simulador utiliza e se a taxa informada tem a mesma periodicidade do prazo.
+
+                P: Juros compostos garantem retorno positivo em um investimento?
+                R: Não. A fórmula apenas projeta os valores para uma taxa informada; não prevê desempenho nem risco de mercado.
+
+                ## Ferramenta
+                Use a calculadora educativa de juros compostos e confira os parâmetros antes de interpretar o resultado.
+                """;
+            sampleArticle.TechnicalContent = """
+                ## Fórmula e unidades
+                Sem aportes, FV = PV × (1 + i)^n. A taxa i e o período n precisam ter periodicidade compatível. A taxa anual efetiva equivalente a uma taxa mensal constante é (1 + i_m)^12 − 1.
+
+                ## Aportes
+                Para pagamentos ao fim dos períodos, FV = PV × (1+i)^n + PMT × (((1+i)^n − 1) / i). Aportes no início multiplicam o fator de aportes por (1+i). Para taxa zero, o fator limite é n.
+
+                ## Limites
+                A conta assume taxa constante, capitalização regular e os fluxos definidos. Ela não considera automaticamente impostos, taxas, liquidez, risco, inflação ou variações de preço. O resultado da Calculadora do Cidadão também depende dos parâmetros informados e pode diferir de contratos.
+                """;
+            sampleArticle.Status = ArticleStatus.Published;
+            sampleArticle.ReviewStatus = ReviewStatus.Reviewed;
+            sampleArticle.LastReviewedAt = now;
+            sampleArticle.NeedsReviewAt = now.AddMonths(6);
+            sampleArticle.ContentVersion++;
+            foreach (var url in new[] { "https://www.bcb.gov.br/meubc/calculadoradocidadao", "https://www.bcb.gov.br/content/config/aprendervalor/docs_aprender_valor/OLITEF_2024_CADERNO_ESTUDANTE_VFinal.pdf" })
+            {
+                var source = sourceByUrl[url];
+                source.LastVerifiedAt = now;
+                if (!sampleArticle.ArticleSources.Any(x => x.SourceId == source.Id || x.Source?.Url == url)) sampleArticle.ArticleSources.Add(new ArticleSource { Article = sampleArticle, Source = source });
+            }
+        }        if (db.ChangeTracker.HasChanges())
             await db.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Financial education content provisioned: {Articles} new articles; {Sources} official sources.", added, Sources.Length);
     }

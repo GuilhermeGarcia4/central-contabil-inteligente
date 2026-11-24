@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard, adminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  { path: 'minha-conta/financas/simulacoes', canActivate: [authGuard], loadComponent: () => import('./features/finance/simulation-history.component').then(m => m.SimulationHistoryComponent), title: 'Simulações salvas' },
   { path: 'minha-conta/financas/planejamento', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-planning.component').then(m => m.FinancePlanningComponent), title: 'Planejamento financeiro' },
   { path: 'minha-conta/financas/metas', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-goals.component').then(m => m.FinanceGoalsComponent), title: 'Metas financeiras' },
   { path: 'minha-conta/financas/compromissos', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-commitments.component').then(m => m.FinanceCommitmentsComponent), title: 'Compromissos financeiros' },
@@ -17,6 +18,8 @@ export const routes: Routes = [
   { path: 'minha-conta/financas/preferencias', canActivate: [authGuard], loadComponent: () => import('./features/finance/finance-preferences.component').then(m => m.FinancePreferencesComponent), title: 'Preferências financeiras' },
   { path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent), title: 'Contabiliza Fácil' },
   { path: 'buscar', loadComponent: () => import('./features/search/unified-search.component').then(m => m.UnifiedSearchComponent), title: 'Busca universal' },
+  { path: 'indicadores-economicos', loadComponent: () => import('./features/education/economic-indicators.component').then(m => m.EconomicIndicatorsComponent), title: 'Indicadores econômicos' },
+  { path: 'glossario', loadComponent: () => import('./features/education/economic-indicators.component').then(m => m.FinancialGlossaryComponent), title: 'Glossário financeiro' },
   { path: 'educacao-financeira', loadComponent: () => import('./features/education/education-center.component').then(m => m.EducationCenterComponent), title: 'Educação financeira' },
   { path: 'calculadoras', loadComponent: () => import('./features/calculators/calculator-center.component').then(m => m.CalculatorCenterComponent), title: 'Calculadoras financeiras' },
   { path: 'comparador-propostas', loadComponent: () => import('./features/finance/proposal-comparator.component').then(m => m.ProposalComparatorComponent), title: 'Comparar propostas bancárias' },

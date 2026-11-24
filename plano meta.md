@@ -345,3 +345,7 @@ Inicie pela análise do projeto atual, identifique os componentes reutilizáveis
 - Testes adicionados para juros simples, Price, SAC, aportes de investimento, CET e limite de prazo. Verificação de todos os endpoints financeiros com entradas de referência e do endpoint de referência do Banco Central concluída.
 - Validação final: `dotnet build` sem avisos/erros; `dotnet test` aprovou 100 testes unitários; 19 testes de integração foram ignorados sem `TEST_CONNECTION_STRING`; `npm run build` e `npm test` aprovados (25 testes Angular). Os 15 slugs das calculadoras e o comparador foram exercitados por chamadas API com cenários de referência; API e PostgreSQL responderam saudáveis, API do Banco Central retornou referência; rotas `/calculadoras` e `/comparador-propostas` servidas pela aplicação após o restart final.
 - Restart final concluído: API em `http://localhost:5042` e frontend em `http://localhost:4200`; após reiniciar, health e banco responderam saudáveis, as 15 calculadoras responderam, a consulta SGS 20748 respondeu e as duas rotas principais retornaram HTTP 200.
+
+## Continuação — melhorias pendentes
+
+O novo escopo e os critérios de aceite auditados estão em [docs/METAS.md](docs/METAS.md). As nove etapas desta continuação foram solicitadas; status, limitações e evidências devem ser atualizados nesse arquivo durante a execução.

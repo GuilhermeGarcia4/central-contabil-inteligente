@@ -49,6 +49,9 @@ export class CalculatorCenterComponent {
     {slug:'portabilidade-divida',title:'Portabilidade de dívida',summary:'Compare parcelas e custo estimado no mesmo prazo.',group:'Crédito e dívidas'},
     {slug:'consorcio-financiamento',title:'Consórcio x financiamento',summary:'Compare custos simplificados com taxas informadas.',group:'Crédito e dívidas'},
     {slug:'cet',title:'Custo Efetivo Total (CET)',summary:'Estime a taxa implícita nas parcelas e custos iniciais informados.',group:'Crédito e dívidas'},
+    {slug:'renegociacao-divida',title:'Renegociação de dívida',summary:'Compare desconto, entrada, saldo financiado e total estimado.',group:'Crédito e dívidas'},
+    {slug:'cartao-credito',title:'Cenários do cartão de crédito',summary:'Compare um cenário simplificado de rotativo limitado com empréstimo.',group:'Crédito e dívidas'},
+    {slug:'rendimento-liquido',title:'Rendimento líquido',summary:'Informe tributos e taxas do produto para estimar o saldo líquido.',group:'Investimentos e patrimônio'},
     {slug:'ferias',title:'Férias',summary:'Consulte uma estimativa bruta de remuneração e abono.',group:'Organização financeira'},
     {slug:'decimo-terceiro',title:'13º salário',summary:'Estime o valor bruto proporcional aos meses trabalhados.',group:'Organização financeira'}
   ];

@@ -127,6 +127,19 @@ public static class ApiEndpoints
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
             catch (Exception) { return Results.Problem(statusCode: 503, title: "Referência do Banco Central indisponível", detail: "Tente novamente mais tarde ou consulte diretamente a fonte oficial."); }
         }).WithTags("Market data").RequireRateLimiting("public");
+        api.MapGet("/market-rates/credit-institutions", async (string? modality, BacenCreditRateProvider provider, CancellationToken ct) => {
+            try { return Results.Ok(await provider.GetInstitutionRatesAsync(string.IsNullOrWhiteSpace(modality) ? null : modality, ct)); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (Exception) { return Results.Problem(statusCode: 503, title: "Taxas do Banco Central indisponíveis", detail: "A consulta por instituição falhou. A comparação manual segue disponível."); }
+        }).WithTags("Market data").RequireRateLimiting("public");
+        api.MapGet("/market-rates/indicators", (BacenCreditRateProvider provider) => Results.Ok(provider.GetSeries())).WithTags("Market data");
+        api.MapGet("/market-rates/indicators/{code:int}", async (int code, DateOnly from, DateOnly to, BacenCreditRateProvider provider, CancellationToken ct) => {
+            try { return Results.Ok(new { series = provider.GetSeries().SingleOrDefault(x => x.Code == code), observations = await provider.GetSeriesAsync(code, from, to, ct), retrievedAt = DateTimeOffset.UtcNow }); }
+            catch (KeyNotFoundException) { return Results.NotFound(new { message = "Série econômica não disponível." }); }
+            catch (ArgumentOutOfRangeException ex) { return Results.BadRequest(new { message = ex.Message }); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (Exception) { return Results.Problem(statusCode: 503, title: "Indicador indisponível", detail: "A série do Banco Central não pôde ser consultada."); }
+        }).WithTags("Market data").RequireRateLimiting("public");
         api.MapGet("/articles", async (AppDbContext db, CancellationToken ct) => Results.Ok(await db.Articles.AsNoTracking().Where(x => x.Status == ArticleStatus.Published).OrderByDescending(x => x.PublishedAt).Select(x => new { x.Id, x.Title, x.Slug, x.Summary, category = x.Category.Name, x.PublishedAt, x.NeedsReviewAt }).ToListAsync(ct))).WithTags("Content");
         api.MapGet("/articles/{slug}", async (string slug, AppDbContext db, CancellationToken ct) => {
             var item = await db.Articles.AsNoTracking().Where(x => x.Slug == slug && x.Status == ArticleStatus.Published).Select(x => new { x.Id, x.Title, x.Slug, x.Summary, x.SimpleContent, x.TechnicalContent, category = x.Category.Name, x.PublishedAt, x.LastReviewedAt, x.ContentVersion, sources = x.ArticleSources.Select(s => new { s.Source.Name, s.Source.Url, s.Source.IsOfficial, s.Source.LastVerifiedAt }) }).FirstOrDefaultAsync(ct);
@@ -152,6 +165,12 @@ public static class ApiEndpoints
             catch (KeyNotFoundException) { return Results.NotFound(new { message = "Calculadora não encontrada." }); }
             catch (ArgumentOutOfRangeException ex) { return Results.ValidationProblem(new Dictionary<string, string[]> { [ex.ParamName ?? "entrada"] = [ex.Message] }); }
         }).WithTags("Financial tools").RequireRateLimiting("public");
+        group.MapPost("/financial-tools/{slug}/solve/{target}", (string slug, string target, Dictionary<string, decimal> body, FinancialToolsCalculator calculator) => {
+            if (slug is not ("financiamento-fixas" or "financiamento-price" or "investimento-aportes")) return Results.NotFound(new { message = "Solução inversa indisponível para esta calculadora." });
+            try { return Results.Ok(slug == "investimento-aportes" ? calculator.SolveRegularInvestment(target, body) : calculator.SolvePrice(target, body)); }
+            catch (KeyNotFoundException) { return Results.NotFound(new { message = "Variável a resolver não disponível." }); }
+            catch (ArgumentOutOfRangeException ex) { return Results.ValidationProblem(new Dictionary<string, string[]> { [ex.ParamName ?? "entrada"] = [ex.Message] }); }
+        }).WithTags("Financial tools").RequireRateLimiting("public");
         group.MapPost("/vacation", (VacationInput body, HttpContext h, IRuleSetSelector selector, IEnumerable<IFinancialCalculator> calculators, AppDbContext db, CancellationToken ct) => Run("ferias", body, h, selector, calculators, db, ct));
         group.MapPost("/thirteenth-salary", (ThirteenthSalaryInput body, HttpContext h, IRuleSetSelector selector, IEnumerable<IFinancialCalculator> calculators, AppDbContext db, CancellationToken ct) => Run("decimo-terceiro", body, h, selector, calculators, db, ct));
     }
@@ -173,6 +192,15 @@ public static class ApiEndpoints
     {
         var account = api.MapGroup("/account").RequireAuthorization().WithTags("Account");
         account.MapGet("/calculations", async (ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => Results.Ok(await db.CalculationRuns.AsNoTracking().Where(x => x.UserId == UserId(user)).OrderByDescending(x => x.CalculatedAt).Select(x => new { x.Id, calculator = x.Calculator.Name, x.CalculatedAt, x.ResultAmount, ruleVersion = x.RuleSet.Version }).ToListAsync(ct)));
+        account.MapGet("/simulations", async (ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => Results.Ok(await db.SavedSimulations.AsNoTracking().Where(x => x.UserId == UserId(user)).OrderByDescending(x => x.SavedAt).Select(x => new { x.Id, x.Title, x.Slug, x.SavedAt }).ToListAsync(ct)));
+        account.MapGet("/simulations/{id:guid}", async (Guid id, ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => { var item = await db.SavedSimulations.AsNoTracking().Where(x => x.Id == id && x.UserId == UserId(user)).Select(x => new { x.Id, x.Title, x.Slug, x.InputJson, x.ResultJson, x.SavedAt }).FirstOrDefaultAsync(ct); return item is null ? Results.NotFound() : Results.Ok(item); });
+        account.MapPost("/simulations", async (SavedSimulationRequest body, ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => {
+            if (string.IsNullOrWhiteSpace(body.Title) || body.Title.Length > 120 || string.IsNullOrWhiteSpace(body.Slug) || body.Slug.Length > 60 || body.InputJson.Length > 16000 || body.ResultJson.Length > 16000) return Results.BadRequest(new { message = "Título, calculadora ou dados da simulação inválidos." });
+            var item = new SavedSimulation { UserId = UserId(user), Title = body.Title.Trim(), Slug = body.Slug, InputJson = body.InputJson, ResultJson = body.ResultJson };
+            db.SavedSimulations.Add(item); await db.SaveChangesAsync(ct); return Results.Created($"/api/v1/account/simulations/{item.Id}", new { item.Id, item.Title, item.Slug, item.SavedAt });
+        });
+        account.MapPut("/simulations/{id:guid}", async (Guid id, SavedSimulationTitle body, ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => { if (string.IsNullOrWhiteSpace(body.Title) || body.Title.Length > 120) return Results.BadRequest(new { message = "Informe um título de até 120 caracteres." }); var item = await db.SavedSimulations.FirstOrDefaultAsync(x => x.Id == id && x.UserId == UserId(user), ct); if (item is null) return Results.NotFound(); item.Title = body.Title.Trim(); await db.SaveChangesAsync(ct); return Results.Ok(new { item.Id, item.Title, item.Slug, item.SavedAt }); });
+        account.MapDelete("/simulations/{id:guid}", async (Guid id, ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => { var item = await db.SavedSimulations.FirstOrDefaultAsync(x => x.Id == id && x.UserId == UserId(user), ct); if (item is null) return Results.NotFound(); db.SavedSimulations.Remove(item); await db.SaveChangesAsync(ct); return Results.NoContent(); });
         account.MapGet("/favorites", async (ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => Results.Ok(await db.Favorites.AsNoTracking().Where(x => x.UserId == UserId(user)).OrderByDescending(x => x.CreatedAt).Select(x => new { x.ArticleId, x.Article.Title, x.Article.Slug, x.CreatedAt }).ToListAsync(ct)));
         account.MapPost("/favorites/{articleId:guid}", async (Guid articleId, ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => { if (!await db.Articles.AnyAsync(x => x.Id == articleId && x.Status == ArticleStatus.Published, ct)) return Results.NotFound(); db.Favorites.Add(new Favorite { UserId = UserId(user), ArticleId = articleId }); await db.SaveChangesAsync(ct); return Results.NoContent(); });
         account.MapDelete("/favorites/{articleId:guid}", async (Guid articleId, ClaimsPrincipal user, AppDbContext db, CancellationToken ct) => { var item = await db.Favorites.FirstOrDefaultAsync(x => x.ArticleId == articleId && x.UserId == UserId(user), ct); if (item is null) return Results.NotFound(); db.Favorites.Remove(item); await db.SaveChangesAsync(ct); return Results.NoContent(); });
@@ -210,6 +238,8 @@ public static class ApiEndpoints
     }
 
     private static Guid UserId(ClaimsPrincipal user) => Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private sealed record SavedSimulationRequest(string Title, string Slug, string InputJson, string ResultJson);
+    private sealed record SavedSimulationTitle(string Title);
     private static AuditLog Log(string action, Article entity, ClaimsPrincipal user, HttpContext http, object? oldValue, object newValue) => new() { Action = action, EntityType = nameof(Article), EntityId = entity.Id.ToString(), UserId = UserId(user), IpAddress = http.Connection.RemoteIpAddress?.ToString(), OldValues = oldValue is null ? null : JsonSerializer.Serialize(oldValue), NewValues = JsonSerializer.Serialize(newValue) };
     private static AuditLog Audit(string action, Guid id, string type, ClaimsPrincipal user, HttpContext http, object value) => new() { Action = action, EntityType = type, EntityId = id.ToString(), UserId = UserId(user), IpAddress = http.Connection.RemoteIpAddress?.ToString(), NewValues = JsonSerializer.Serialize(value) };
     private static void SetRefreshCookie(HttpContext http, string token)

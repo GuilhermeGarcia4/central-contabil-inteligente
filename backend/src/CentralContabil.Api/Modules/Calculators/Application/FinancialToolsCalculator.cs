@@ -26,8 +26,53 @@ public sealed class FinancialToolsCalculator
             "portabilidade-divida" => DebtPortability(input),
             "consorcio-financiamento" => ConsortiumVsFinancing(input),
             "cet" => EffectiveCost(input),
+            "renegociacao-divida" => DebtRenegotiation(input),
+            "rendimento-liquido" => NetInvestmentReturn(input),
+            "cartao-credito" => CreditCard(input),
             _ => throw new KeyNotFoundException("Calculadora não encontrada.")
         };
+    }
+
+    public FinancialToolResponse SolvePrice(string target, IReadOnlyDictionary<string, decimal> input)
+    {
+        Validate(input);
+        var rate = input.GetValueOrDefault("monthlyRatePercent") / 100m;
+        if (target == "principal")
+        {
+            var payment = Required(input, "installmentValue", 0.01m); var months = Periods(input);
+            var principal = PresentValue(payment, rate, months);
+            return Result(principal, [("valorFinanciadoResolvido", principal), ("parcelaInformada", payment), ("totalPago", payment * months)], "PV = PMT × (1 − (1+i)^−n) / i", "Principal resolvido para parcelas, taxa e prazo informados.");
+        }
+        if (target == "monthlyRatePercent")
+        {
+            var principal = Required(input, "principal", 0.01m); var payment = Required(input, "installmentValue", 0.01m); var months = Periods(input);
+            if (payment + 0.000001m < principal / months) throw new ArgumentOutOfRangeException("installmentValue", "Não há taxa mensal não negativa que produza essa parcela.");
+            decimal low = 0, high = 10;
+            for (var i = 0; i < 200; i++) { var mid = (low + high) / 2; if (Payment(principal, mid, months) < payment) low = mid; else high = mid; }
+            var solved = (low + high) / 2 * 100m;
+            return Result(solved, [("taxaMensalResolvidaPercentual", solved), ("valorFinanciado", principal), ("parcelaInformada", payment), ("prazoMeses", months)], "PMT = PV × i / (1 − (1+i)^−n); i resolvido numericamente", "A taxa é uma aproximação numérica mensal; não inclui tarifas nem substitui o CET contratual.");
+        }
+        if (target == "months")
+        {
+            var principal = Required(input, "principal", 0.01m); var payment = Required(input, "installmentValue", 0.01m);
+            var periods = rate == 0 ? (int)Math.Ceiling((double)(principal / payment)) : payment <= principal * rate ? throw new ArgumentOutOfRangeException("installmentValue", "A parcela deve superar os juros do primeiro período para quitar o saldo.") : (int)Math.Ceiling(Math.Log((double)(payment / (payment - principal * rate))) / Math.Log((double)(1 + rate)));
+            if (periods < 1 || periods > MaxPeriods) throw new ArgumentOutOfRangeException("installmentValue", $"O prazo calculado deve ficar entre 1 e {MaxPeriods} meses.");
+            return Result(periods, [("prazoResolvidoMeses", periods), ("valorFinanciado", principal), ("parcelaInformada", payment), ("taxaMensalPercentual", rate * 100m)], "n = ln(PMT / (PMT − PV × i)) / ln(1+i)", "Prazo arredondado para cima ao primeiro mês inteiro; a última parcela pode ser menor.");
+        }
+        throw new KeyNotFoundException("Variável a resolver não disponível.");
+    }
+
+    public FinancialToolResponse SolveRegularInvestment(string target, IReadOnlyDictionary<string, decimal> input)
+    {
+        Validate(input);
+        if (target is not ("monthlyContribution" or "months" or "monthlyRatePercent")) throw new KeyNotFoundException("Variável a resolver não disponível.");
+        var initial=Optional(input,"initialCapital");var contribution=Optional(input,"monthlyContribution");var ratePercent=Optional(input,"monthlyRatePercent");var atBeginning=Optional(input,"depositAtBeginning")==1;var targetValue=Required(input,"futureValue",0.01m);var resolved=input.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal);
+        decimal ValueAfter(int n,decimal monthlyRate,decimal amount){var balance=initial;for(var month=0;month<n;month++){if(atBeginning)balance+=amount;balance*=1+monthlyRate;if(!atBeginning)balance+=amount;}return balance;}
+        decimal value;
+        if(target=="monthlyContribution") {var months=Periods(input);var rate=ratePercent/100m;var factor=rate==0?months:(decimal)Math.Pow((double)(1+rate),months)-1;factor=rate==0?factor:factor/rate*(atBeginning?1+rate:1);var remainder=targetValue-initial*(decimal)Math.Pow((double)(1+rate),months);if(factor<=0||remainder<0)throw new ArgumentOutOfRangeException("futureValue","O valor futuro deve cobrir o capital inicial projetado.");value=remainder/factor;resolved["monthlyContribution"]=value;}
+        else if(target=="months") {var rate=ratePercent/100m;var found=Enumerable.Range(1,MaxPeriods).FirstOrDefault(n=>ValueAfter(n,rate,contribution)>=targetValue);if(found==0)throw new ArgumentOutOfRangeException("futureValue",$"Meta não atingida em até {MaxPeriods} meses com as premissas informadas.");value=found;resolved["months"]=found;}
+        else {var months=Periods(input);var low=0m;var high=10m;if(ValueAfter(months,low,contribution)>targetValue)throw new ArgumentOutOfRangeException("futureValue","A meta está abaixo do saldo projetado sem rendimento.");if(ValueAfter(months,high,contribution)<targetValue)throw new ArgumentOutOfRangeException("futureValue","A taxa necessária ultrapassa o limite de 1.000% ao mês.");for(var i=0;i<200;i++){var mid=(low+high)/2;if(ValueAfter(months,mid,contribution)<targetValue)low=mid;else high=mid;}value=(low+high)/2*100m;resolved["monthlyRatePercent"]=value;}
+        var calculation=Calculate("investimento-aportes",resolved);var breakdown=calculation.Breakdown.ToDictionary(x=>x.Key,x=>x.Value);breakdown[$"{target}Resolvido"] = decimal.Round(value,2);return calculation with { Result=decimal.Round(value,2),Breakdown=breakdown,Steps=calculation.Steps.Append($"Variável {target} resolvida para o valor futuro informado com aportes ao {(atBeginning?"início":"fim")} do período.").ToArray() };
     }
 
     private static FinancialToolResponse SimpleInterest(IReadOnlyDictionary<string, decimal> x)
@@ -76,10 +121,11 @@ public sealed class FinancialToolsCalculator
 
     private static FinancialToolResponse RegularInvestment(IReadOnlyDictionary<string, decimal> x)
     {
-        var initial = Optional(x, "initialCapital"); var contribution = Required(x, "monthlyContribution", 0); var rate = Required(x, "monthlyRatePercent", 0) / 100m; var months = Periods(x);
-        var balance = initial; for (var i = 0; i < months; i++) balance = balance * (1 + rate) + contribution;
+        var initial = Optional(x, "initialCapital"); var contribution = Required(x, "monthlyContribution", 0); var rate = Required(x, "monthlyRatePercent", 0) / 100m; var months = Periods(x); var atBeginning = Optional(x, "depositAtBeginning") == 1;
+        var balance = initial; var schedule = new List<AmortizationRow>(months);
+        for (var i = 1; i <= months; i++) { if (atBeginning) balance += contribution; var interest = balance * rate; balance += interest; if (!atBeginning) balance += contribution; schedule.Add(new(i, contribution, contribution, interest, balance)); }
         var contributed = initial + contribution * months;
-        return Result(balance, [("capitalInicial", initial), ("aportes", contribution * months), ("totalInvestido", contributed), ("rendimentoEstimado", balance - contributed), ("saldoFinalEstimado", balance)], "M = C(1+i)^n + A × ((1+i)^n − 1) / i", $"Aportes ao fim de cada mês; taxa mensal informada {rate * 100:N4}%; sem impostos, taxas ou oscilação de mercado.");
+        return Result(balance, [("capitalInicial", initial), ("aportes", contribution * months), ("totalInvestido", contributed), ("rendimentoEstimado", balance - contributed), ("saldoFinalEstimado", balance)], "M = C(1+i)^n + A × ((1+i)^n − 1) / i; aporte no início multiplica o fator de aportes por (1+i)", $"Aportes ao {(atBeginning ? "início" : "fim")} de cada mês; taxa mensal informada {rate * 100:N4}%; sem impostos, taxas ou oscilação de mercado.", schedule);
     }
 
     private static FinancialToolResponse InvestmentReturn(IReadOnlyDictionary<string, decimal> x)
@@ -129,9 +175,11 @@ public sealed class FinancialToolsCalculator
     private static FinancialToolResponse ConsortiumVsFinancing(IReadOnlyDictionary<string, decimal> x)
     {
         var value = Required(x, "assetValue", 0.01m); var months = Periods(x); var administration = Required(x, "administrationPercent", 0) / 100m; var reserveFund = Required(x, "reserveFundPercent", 0) / 100m; var insurance = Optional(x, "monthlyInsurance");
-        var consortiumPayment = value * (1 + administration + reserveFund) / months + insurance; var consortiumTotal = consortiumPayment * months;
-        var financeRate = Required(x, "financingMonthlyRatePercent", 0) / 100m; var financePayment = Payment(value, financeRate, months); var financeTotal = financePayment * months;
-        return Result(consortiumTotal - financeTotal, [("parcelaConsorcioEstimada", consortiumPayment), ("totalConsorcioEstimado", consortiumTotal), ("parcelaFinanciamentoEstimada", financePayment), ("totalFinanciamentoEstimado", financeTotal), ("diferencaConsorcioMenosFinanciamento", consortiumTotal - financeTotal)], "Consórcio: (crédito × (1 + taxa de administração + fundo reserva)) / prazo + seguro; financiamento: sistema Price", "Estimativa sem reajustes do crédito, lance, contemplação, tarifas adicionais, seguros do financiamento ou valor do dinheiro no tempo. Compare contratos completos.");
+        var freeBidPercent=Optional(x,"freeBidPercent");var embeddedBidPercent=Optional(x,"embeddedBidPercent");if(freeBidPercent+embeddedBidPercent>100)throw new ArgumentOutOfRangeException("freeBidPercent","A soma dos lances não pode superar 100% do crédito.");
+        var adjustment=Optional(x,"annualAdjustmentPercent")/100m;var discountRate=Optional(x,"discountMonthlyRatePercent")/100m;var initialPayment=value*(1+administration+reserveFund)/months+insurance;var consortiumTotal=0m;var consortiumPv=0m;var schedule=new List<AmortizationRow>(months);
+        for(var month=1;month<=months;month++){var payment=initialPayment*(decimal)Math.Pow((double)(1+adjustment),(month-1)/12);consortiumTotal+=payment;consortiumPv+=payment/(decimal)Math.Pow((double)(1+discountRate),month);schedule.Add(new(month,payment,0,0,Math.Max(0,value*(1-embeddedBidPercent/100m))));}
+        var financeRate=Required(x,"financingMonthlyRatePercent",0)/100m;var financed=value*(1-freeBidPercent/100m);var financePayment=Payment(financed,financeRate,months);var financeTotal=financePayment*months+value*freeBidPercent/100m;var financePv=value*freeBidPercent/100m;for(var month=1;month<=months;month++)financePv+=financePayment/(decimal)Math.Pow((double)(1+discountRate),month);
+        return Result(consortiumTotal-financeTotal,[("parcelaConsorcioInicial",initialPayment),("totalConsorcioComReajuste",consortiumTotal),("creditoLiquidoAposLanceEmbutido",value*(1-embeddedBidPercent/100m)),("lanceLivreInformado",value*freeBidPercent/100m),("parcelaFinanciamentoEstimada",financePayment),("totalFinanciamentoComLanceLivre",financeTotal),("valorPresenteConsorcio",consortiumPv),("valorPresenteFinanciamento",financePv),("diferencaNominalConsorcioMenosFinanciamento",consortiumTotal-financeTotal)],"Consórcio: parcelas com reajuste anual informado; financiamento Price sobre crédito após lance livre",$"Lance embutido {embeddedBidPercent:N2}%; lance livre {freeBidPercent:N2}%; reajuste anual {adjustment*100:N2}%; desconto temporal mensal {discountRate*100:N3}%.",schedule);
     }
 
     private static FinancialToolResponse EffectiveCost(IReadOnlyDictionary<string, decimal> x)
@@ -142,6 +190,33 @@ public sealed class FinancialToolsCalculator
         for (var i = 0; i < 200; i++) { var mid = (low + high) / 2m; var pv = PresentValue(payment, mid, months); if (pv > received) low = mid; else high = mid; }
         var monthlyRate = (low + high) / 2m; var annualRate = ((decimal)Math.Pow((double)(1 + monthlyRate), 12) - 1) * 100m;
         return Result(annualRate, [("valorLiquidoRecebido", received), ("custosIniciais", costs), ("valorParcela", payment), ("totalParcelas", payment * months), ("cetMensalPercentual", monthlyRate * 100m), ("cetAnualPercentual", annualRate)], "Fluxo de caixa: valor líquido recebido = valor presente das parcelas; CET anual = (1 + CET mensal)^12 − 1", "Taxa interna estimada para parcelas mensais iguais e primeira parcela em um mês. O CET contratual pode incluir datas e despesas adicionais diferentes das informadas.");
+    }
+
+    private static FinancialToolResponse DebtRenegotiation(IReadOnlyDictionary<string, decimal> x)
+    {
+        var balance = Required(x, "balance", 0.01m); var discount = Required(x, "discountPercent", 0); var down = Optional(x, "downPayment"); var costs = Optional(x, "costs"); var months = Periods(x); var rate = Required(x, "monthlyRatePercent", 0) / 100m;
+        if (discount > 100) throw new ArgumentOutOfRangeException("discountPercent", "Desconto máximo: 100%.");
+        var negotiated = balance * (1 - discount / 100m); if (down > negotiated) throw new ArgumentOutOfRangeException("downPayment", "A entrada não pode superar o saldo negociado.");
+        var financed = negotiated - down + costs; var payment = Payment(financed, rate, months); var total = down + payment * months;
+        return Result(total, [("saldoInformado", balance), ("descontoEstimado", balance - negotiated), ("saldoNegociado", negotiated), ("entrada", down), ("custosInformados", costs), ("parcelaEstimada", payment), ("totalRenegociado", total), ("economiaContraSaldoOriginal", balance - total)], "Saldo negociado = saldo informado × (1 − desconto); saldo financiado pela fórmula Price", "Desconto, entrada, taxa, prazo e custos são hipóteses digitadas. Solicite proposta de quitação oficial e confira encargos e datas com o credor.");
+    }
+
+    private static FinancialToolResponse NetInvestmentReturn(IReadOnlyDictionary<string, decimal> x)
+    {
+        var principal = Required(x, "principal", 0.01m); var rate = Required(x, "monthlyRatePercent", 0) / 100m; var months = Periods(x); var taxPercent = Required(x, "incomeTaxPercent", 0); var iofPercent = Required(x, "iofPercent", 0); var fees = Optional(x, "fees");
+        if (taxPercent > 100 || iofPercent > 100) throw new ArgumentOutOfRangeException(nameof(x), "Impostos informados devem estar entre 0% e 100%.");
+        var grossYield = principal * (decimal)Math.Pow((double)(1 + rate), months) - principal; var iof = grossYield * iofPercent / 100m; var incomeTax = Math.Max(0, grossYield - iof) * taxPercent / 100m; var net = principal + grossYield - iof - incomeTax - fees;
+        return Result(net, [("aporteInicial", principal), ("rendimentoBrutoEstimado", grossYield), ("iofInformado", iof), ("impostoDeRendaInformado", incomeTax), ("taxasInformadas", fees), ("saldoLiquidoEstimado", net), ("rentabilidadeLiquidaPercentual", (net / principal - 1) * 100m)], "Saldo bruto = capital × (1 + taxa mensal)^prazo; saldo líquido deduz impostos e taxas informados", "As alíquotas de IR e IOF são fornecidas pelo usuário, sem inferência de regime tributário. Confirme modalidade, prazo e tributação na fonte oficial e no produto.");
+    }
+
+    private static FinancialToolResponse CreditCard(IReadOnlyDictionary<string, decimal> x)
+    {
+        var principal = Required(x, "balance", 0.01m); var monthlyRate = Required(x, "monthlyRatePercent", 0) / 100m; var paymentPercent = Required(x, "paymentPercent", 1); var months = Periods(x); var loanRate = Required(x, "loanMonthlyRatePercent", 0) / 100m;
+        if (paymentPercent > 100) throw new ArgumentOutOfRangeException("paymentPercent", "O pagamento mensal máximo é 100% do saldo.");
+        var balance = principal; var charged = 0m; var revolvingTotal = 0m; var schedule = new List<AmortizationRow>();
+        for (var period = 1; period <= months && balance > 0.005m; period++) { var interest = Math.Min(balance * monthlyRate, Math.Max(0, principal - charged)); charged += interest; var due = balance + interest; var payment = Math.Min(due, Math.Max(due * paymentPercent / 100m, Math.Min(due, 0.01m))); balance = due - payment; revolvingTotal += payment; schedule.Add(new(period, decimal.Round(payment, 2), decimal.Round(payment - interest, 2), decimal.Round(interest, 2), decimal.Round(balance, 2))); }
+        var loanPayment = Payment(principal, loanRate, months); var loanTotal = loanPayment * months;
+        return Result(revolvingTotal, [("saldoOriginal", principal), ("encargosAcumuladosLimitados", charged), ("pagamentosTotaisNoCenarioRotativo", revolvingTotal), ("saldoRestanteNoFim", balance), ("parcelaEstimadaEmprestimo", loanPayment), ("totalEstimadoEmprestimo", loanTotal), ("prazoEmprestimo", months)], "Saldo mensal = saldo anterior + juros limitados a 100% do principal original − pagamento", "Cenário simplificado de crédito rotativo elegível às regras aplicáveis a operações desde 03/01/2024; o limite se refere ao total acumulado de juros e encargos, não à taxa. Taxas e pagamento percentual são premissas informadas; confira a regra e o contrato.", schedule);
     }
 
     private static decimal Payment(decimal principal, decimal monthlyRate, int months) => monthlyRate == 0 ? principal / months : principal * monthlyRate / (1 - (decimal)Math.Pow((double)(1 + monthlyRate), -months));

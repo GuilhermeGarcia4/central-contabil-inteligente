@@ -1,0 +1,24 @@
+import { DatePipe, JsonPipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+interface SavedRow { id:string; title:string; slug:string; savedAt:string; }
+interface SavedDetail extends SavedRow { inputJson:string; resultJson:string; }
+@Component({standalone:true,imports:[DatePipe,JsonPipe,RouterLink],template:`
+<section class="page history"><a routerLink="/minha-conta/financas">← Minhas finanças</a><span class="eyebrow">SEU HISTÓRICO</span><h1>Simulações salvas</h1><p>Somente simulações salvas por você aparecem aqui.</p>
+@if(error()){<p role="alert">{{error()}}</p>}
+@if(items().length){<div class="history-grid"><nav aria-label="Simulações salvas">@for(item of items();track item.id){<article><button (click)="open(item.id)"><strong>{{item.title}}</strong><small>{{item.savedAt|date:'dd/MM/yyyy HH:mm'}} · {{item.slug}}</small></button><button class="delete" (click)="remove(item.id)" [attr.aria-label]="'Excluir '+item.title">Excluir</button></article>}</nav>
+@if(detail();as item){<section class="detail"><h2>{{item.title}}</h2><p>{{item.savedAt|date:'dd/MM/yyyy HH:mm'}}</p><h3>Parâmetros usados</h3><pre>{{pretty(item.inputJson)}}</pre><h3>Resultado salvo</h3><pre>{{pretty(item.resultJson)}}</pre><button class="primary" (click)="recalculate()" [disabled]="busy()">Recalcular com a versão atual</button><button (click)="duplicate()">Duplicar</button><button (click)="rename()">Renomear</button>@if(recalculated()){<pre>{{recalculated()|json}}</pre>}</section>}</div>}
+@else if(!error()){<p>Você ainda não salvou simulações. Abra uma calculadora, execute um cálculo e escolha “Salvar no meu histórico”.</p>}
+</section>`,styles:[` .history{max-width:1050px}.history>a{display:block;margin-bottom:24px;color:var(--blue)}.history-grid{display:grid;grid-template-columns:minmax(250px,360px) minmax(0,1fr);gap:20px;margin-top:24px}.history nav{display:grid;align-content:start;gap:8px}.history nav article{display:flex;justify-content:space-between;gap:5px;padding:10px;border:1px solid var(--line);border-radius:8px}.history nav button{border:0;background:none;text-align:left;cursor:pointer}.history nav small{display:block;color:var(--muted);margin-top:5px}.delete{color:var(--danger)}.detail{padding:20px;border:1px solid var(--line);border-radius:10px}.detail pre{overflow:auto;padding:12px;background:var(--surface);white-space:pre-wrap;word-break:break-word}@media(max-width:720px){.history-grid{grid-template-columns:1fr}}`]} )
+export class SimulationHistoryComponent {
+ private http=inject(HttpClient); readonly items=signal<SavedRow[]>([]);readonly detail=signal<SavedDetail|null>(null);readonly recalculated=signal<unknown>(null);readonly busy=signal(false);readonly error=signal('');
+ constructor(){this.refresh()}
+ refresh(){this.http.get<SavedRow[]>('/api/v1/account/simulations').subscribe({next:x=>this.items.set(x),error:()=>this.error.set('Não foi possível carregar o histórico da sua conta.')})}
+ open(id:string){this.recalculated.set(null);this.http.get<SavedDetail>(`/api/v1/account/simulations/${id}`).subscribe({next:x=>this.detail.set(x),error:()=>this.error.set('A simulação não foi encontrada.')})}
+ remove(id:string){if(!window.confirm('Excluir esta simulação salva?'))return;this.http.delete(`/api/v1/account/simulations/${id}`).subscribe({next:()=>{if(this.detail()?.id===id)this.detail.set(null);this.refresh()},error:()=>this.error.set('Não foi possível excluir esta simulação.')})}
+ pretty(raw:string){try{return JSON.stringify(JSON.parse(raw),null,2)}catch{return raw}}
+ duplicate(){const item=this.detail();if(!item||!window.confirm("Criar uma cópia desta simulação no seu histórico?"))return;this.http.post("/api/v1/account/simulations",{title:item.title+" (cópia)",slug:item.slug,inputJson:item.inputJson,resultJson:item.resultJson}).subscribe({next:()=>this.refresh(),error:()=>this.error.set("Não foi possível duplicar a simulação.")})}
+ rename(){const item=this.detail();if(!item)return;const title=window.prompt("Novo título",item.title);if(!title||title.trim()===item.title)return;this.http.put(`/api/v1/account/simulations/${item.id}`,{title:title.trim()}).subscribe({next:()=>{this.refresh();this.open(item.id)},error:()=>this.error.set("Não foi possível renomear a simulação.")})}
+ recalculate(){const item=this.detail();if(!item)return;let input:Record<string,number>;try{input=JSON.parse(item.inputJson)}catch{this.error.set('Os parâmetros salvos estão inválidos.');return}this.busy.set(true);this.http.post(`/api/v1/calculations/financial-tools/${encodeURIComponent(item.slug)}`,input).subscribe({next:x=>{this.recalculated.set(x);this.busy.set(false)},error:()=>{this.error.set('Esta calculadora não pode recalcular o registro salvo.');this.busy.set(false)}})}
+}

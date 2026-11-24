@@ -157,3 +157,15 @@ Os testes de integração são ignorados sem `TEST_CONNECTION_STRING`. Os testes
 - A busca textual oficial do Senado usada pelo adapter está depreciada e isolada para substituição futura.
 - Férias e 13º continuam estimativas brutas com validação jurídica pendente, como na V1.
 - SSR continua fora desta fase.
+
+## Educação financeira ampliada
+
+- O comparador consulta taxas médias mensais do BCB por instituição e modalidade, e mantém propostas informadas manualmente. Referências históricas não são ofertas personalizadas.
+- `/indicadores-economicos` consulta IPCA, INPC, IGP-M, TR (início no dia 1º), poupança desde 2012 (aniversário dia 1º) e Selic mensal, com unidade, periodicidade, referência e fonte. Correção monetária permite compor os meses publicados no período escolhido; meses parciais não são interpolados.
+- As calculadoras de parcelas fixas resolvem principal, taxa ou prazo; a de aportes regulares resolve aporte, prazo ou taxa e aceita depósito no início/fim do período.
+- Simuladores adicionais cobrem renegociação, cartão e rendimento líquido. Tributos e taxas do rendimento líquido são informados pelo usuário; o projeto não presume regime fiscal.
+- O histórico `/minha-conta/financas/simulacoes` é opt-in para conta autenticada e permite ver, renomear, duplicar, recalcular e excluir. Visitantes continuam usando as ferramentas sem persistência.
+- Na calculadora de dívida e na reserva, o preenchimento a partir do financeiro próprio só ocorre após confirmação; os valores não são gravados automaticamente.
+- `/glossario` contém conceitos ligados às ferramentas. O Open Finance permanece desconectado; leia `docs/OPEN_FINANCE_VIABILITY.md` antes de qualquer proposta futura.
+
+As séries públicas são servidas pela API SGS / Olinda do Banco Central. Fontes e premissas são descritas na interface e no [plano de metas](docs/METAS.md).

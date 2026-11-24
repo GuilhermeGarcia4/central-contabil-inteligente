@@ -19,6 +19,7 @@ interface Proposal {
   otherCharges: number | null;
   chargesIncluded: boolean;
 }
+interface MarketCatalog { modalities: string[]; referenceMonth: string; retrievedAt: string; sourceUrl: string; rates: { institution: string; modality: string; referenceMonth: string; monthlyRatePercent: number; annualRatePercent: number }[] }
 
 const newProposal = (): Proposal => ({
   institution: '', operation: '', amount: null, downPayment: null,
@@ -48,7 +49,19 @@ const newProposal = (): Proposal => ({
         <a href="https://dadosabertos.bcb.gov.br/dataset/20748-taxa-media-de-juros-das-operacoes-de-credito-com-recursos-livres---pessoas-fisicas---credito-" target="_blank" rel="noopener noreferrer">Fonte e metodologia no Banco Central ↗</a>
       </section>
 
-      <div class="proposal-actions"><span>{{ offers().length }} propostas</span><button type="button" class="secondary" (click)="addOffer()">Adicionar proposta</button></div>
+      <section class="market-catalog" aria-labelledby="catalog-title">
+        <span class="eyebrow">PESQUISA PÚBLICA</span><h2 id="catalog-title">Médias por instituição e modalidade</h2>
+        <p>Dados médios mensais do Banco Central; não são cotações nem ofertas individuais.</p>
+        @if (catalogLoading()) { <p role="status">Carregando taxas de referência…</p> }
+        @else if (catalog(); as data) {
+          <div class="catalog-controls"><label>Modalidade<select [ngModel]="selectedModality()" (ngModelChange)="loadModality($event)"><option value="">Selecione uma modalidade</option>@for (item of data.modalities; track item) { <option [value]="item">{{ item }}</option> }</select></label><label>Filtrar instituição<input [ngModel]="bankSearch()" (ngModelChange)="bankSearch.set($event)" placeholder="Nome do banco" /></label></div>
+          <p>Mês de referência: {{ data.referenceMonth }} · <a [href]="data.sourceUrl" target="_blank" rel="noopener noreferrer">Fonte: Banco Central</a></p>
+          @if (visibleRates().length) { <div class="table-wrap"><table><caption>Taxas médias observadas, não ofertas garantidas</caption><thead><tr><th>Instituição</th><th>Ao mês</th><th>Ao ano</th><th></th></tr></thead><tbody>@for (row of visibleRates(); track row.institution) { <tr><td>{{ row.institution }}</td><td>{{ row.monthlyRatePercent | number:'1.2-3':'pt-BR' }}%</td><td>{{ row.annualRatePercent | number:'1.2-3':'pt-BR' }}%</td><td><button class="secondary" type="button" (click)="useRate(row)">Usar como referência</button></td></tr> }</tbody></table></div> }
+          @else { <p>Selecione uma modalidade para consultar as instituições disponíveis.</p> }
+        } @else { <p>Consulta indisponível. Você ainda pode comparar propostas manualmente.</p> }
+      </section>
+
+      <div class="proposal-actions"><span>{{ offers().length }} propostas</span><div><button type="button" class="secondary" (click)="duplicateOffer()">Duplicar última</button> <button type="button" class="secondary" (click)="normalizeAmounts()">Criar cópias com mesmo principal</button> <button type="button" class="secondary" (click)="clearOffers()">Limpar</button> <button type="button" class="secondary" (click)="addOffer()">Adicionar proposta</button></div></div>
 
       <div class="proposal-grid">
         @for (offer of offers(); track $index; let i = $index) {
@@ -86,6 +99,7 @@ const newProposal = (): Proposal => ({
         @if (completeOffers().length < 2) {
           <p class="hint" role="status">Preencha valor solicitado, quantidade de parcelas e valor da parcela em pelo menos duas propostas para comparar.</p>
         } @else {
+          @if (!sameConditions()) { <p class="validation-note" role="note">As propostas têm valores, modalidades ou prazos diferentes. Os totais não representam comparação equivalente; use “Criar cópias com mesmo principal” para simular o mesmo valor sem alterar os originais.</p> }
           <div class="highlights">
             <article><span>Menor custo total informado</span><strong>{{ lowestTotal()!.offer.institution || 'Proposta ' + (lowestTotal()!.index + 1) }}</strong><small>{{ lowestTotal()!.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</small></article>
             <article><span>Menor CET informado</span>
@@ -98,10 +112,10 @@ const newProposal = (): Proposal => ({
             <tbody>
               <tr><th scope="row">Operação</th>@for (item of completeOffers(); track item.index) { <td>{{ item.offer.operation || 'Não informado' }}</td> }</tr>
               <tr><th scope="row">Valor solicitado</th>@for (item of completeOffers(); track item.index) { <td>{{ item.offer.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td> }</tr>
-              <tr><th scope="row">Custo das parcelas</th>@for (item of completeOffers(); track item.index) { <td>{{ item.installmentTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td> }</tr>
+              <tr><th scope="row">Custo das parcelas</th>@for (item of completeOffers(); track item.index) { <td>{{ item.installmentTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td> }</tr><tr><th scope="row">Custo excedente estimado sobre principal líquido</th>@for (item of completeOffers(); track item.index) { <td>{{ interestEstimate(item.offer) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td> }</tr>
               <tr><th scope="row">Entrada + custos extras não incluídos</th>@for (item of completeOffers(); track item.index) { <td>{{ item.upfrontTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td> }</tr>
               <tr class="total"><th scope="row">Total desembolsado estimado</th>@for (item of completeOffers(); track item.index) { <td>{{ item.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td> }</tr>
-              <tr><th scope="row">CET anual</th>@for (item of completeOffers(); track item.index) { <td>{{ item.offer.cet === null ? 'Não informado' : (item.offer.cet | number:'1.2-3':'pt-BR') + '% a.a.' }}</td> }</tr>
+              <tr><th scope="row">CET anual (informado ou estimado)</th>@for (item of completeOffers(); track item.index) { <td>{{ cetAnnual(item.offer) }}</td> }</tr>
               <tr><th scope="row">Juros mensal / anual</th>@for (item of completeOffers(); track item.index) { <td>{{ rate(item.offer.monthlyRate) }} / {{ rate(item.offer.annualRate) }}</td> }</tr>
               <tr><th scope="row">Prazo</th>@for (item of completeOffers(); track item.index) { <td>{{ item.offer.installments }} parcelas</td> }</tr>
               <tr><th scope="row">Economia potencial vs. maior total</th>@for (item of completeOffers(); track item.index) { <td>{{ (maximumTotal() - item.total) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td> }</tr>
@@ -124,6 +138,11 @@ export class ProposalComparatorComponent {
   readonly offers = signal<Proposal[]>([newProposal(), newProposal()]);
   readonly marketRate = signal<{annualRatePercent:number;referenceMonth:string;retrievedAt:string}|null>(null);
   readonly marketLoading = signal(true);
+  readonly catalog = signal<MarketCatalog | null>(null);
+  readonly catalogLoading = signal(true);
+  readonly selectedModality = signal('');
+  readonly bankSearch = signal('');
+  readonly visibleRates = computed(() => (this.catalog()?.rates ?? []).filter(x => x.institution.toLocaleLowerCase('pt-BR').includes(this.bankSearch().toLocaleLowerCase('pt-BR'))).sort((a,b) => a.monthlyRatePercent-b.monthlyRatePercent));
   readonly completeOffers = computed(() => this.offers().map((offer, index) => ({ offer, index, ...this.cost(offer) }))
     .filter(item => !this.isInvalid(item.offer) && item.offer.amount !== null && item.offer.amount > 0 && item.offer.installments !== null && item.offer.installments > 0 && Number.isInteger(item.offer.installments) && item.offer.installmentValue !== null && item.offer.installmentValue > 0));
   readonly invalidOffers = computed(() => this.offers().filter(offer => this.isInvalid(offer)));
@@ -131,13 +150,35 @@ export class ProposalComparatorComponent {
   readonly lowestInstallment = computed(() => [...this.completeOffers()].sort((a, b) => (a.offer.installmentValue ?? Infinity) - (b.offer.installmentValue ?? Infinity)).at(0) ?? null);
   readonly lowestCet = computed(() => [...this.completeOffers()].filter(x => x.offer.cet !== null && x.offer.cet >= 0).sort((a, b) => a.offer.cet! - b.offer.cet!).at(0) ?? null);
   readonly maximumTotal = computed(() => Math.max(0, ...this.completeOffers().map(x => x.total)));
+  readonly sameConditions = computed(() => { const rows=this.completeOffers(); return rows.length<2 || rows.every(x=>x.offer.amount===rows[0].offer.amount && x.offer.installments===rows[0].offer.installments && (!rows[0].offer.operation || !x.offer.operation || x.offer.operation.toLowerCase()===rows[0].offer.operation.toLowerCase())); });
 
   constructor() {
     this.http.get<{annualRatePercent:number;referenceMonth:string;retrievedAt:string}>('/api/v1/market-rates/personal-credit').subscribe({
       next: value => { this.marketRate.set(value); this.marketLoading.set(false); },
       error: () => this.marketLoading.set(false)
     });
+    this.http.get<MarketCatalog>('/api/v1/market-rates/credit-institutions').subscribe({ next: value => { this.catalog.set(value); this.catalogLoading.set(false); }, error: () => this.catalogLoading.set(false) });
   }
+
+  loadModality(value: string): void {
+    this.selectedModality.set(value);
+    if (!value) { this.catalog.update(data => data ? { ...data, rates: [] } : null); return; }
+    this.catalogLoading.set(true);
+    this.http.get<MarketCatalog>('/api/v1/market-rates/credit-institutions', { params: { modality: value } }).subscribe({ next: data => { this.catalog.set(data); this.catalogLoading.set(false); }, error: () => this.catalogLoading.set(false) });
+  }
+  useRate(row: MarketCatalog['rates'][number]): void {
+    const empty = this.offers().findIndex(x => !x.institution && !x.amount);
+    const index = empty >= 0 ? empty : this.offers().length - 1;
+    const offer=this.offers()[index];
+    this.update(index, 'institution', row.institution);
+    this.update(index, 'operation', row.modality);
+    this.update(index, 'monthlyRate', row.monthlyRatePercent);
+    this.update(index, 'annualRate', row.annualRatePercent);
+    if(offer.amount && offer.installments && !offer.installmentValue){const principal=Math.max(0,offer.amount-(offer.downPayment??0));const rate=row.monthlyRatePercent/100;const payment=rate===0?principal/offer.installments:principal*rate/(1-Math.pow(1+rate,-offer.installments));this.update(index,'installmentValue',Math.round(payment*100)/100);}
+  }
+  duplicateOffer(): void { const last = this.offers().at(-1); if (last) this.offers.update(items => [...items, { ...last }]); }
+  normalizeAmounts(): void { const rows=this.completeOffers(); if(rows.length<2)return; const principal=rows[0].offer.amount!; this.offers.update(items=>[...items,...rows.map(x=>({...x.offer,institution:`${x.offer.institution||`Proposta ${x.index+1}`} · mesmo principal`,amount:principal,downPayment:(x.offer.downPayment??0)>principal?0:x.offer.downPayment}))]); }
+  clearOffers(): void { this.offers.set([newProposal(), newProposal()]); }
 
   update<K extends keyof Proposal>(index: number, field: K, value: Proposal[K]): void {
     this.offers.update(items => items.map((item, i) => i === index ? { ...item, [field]: value } as Proposal : item));
@@ -145,6 +186,14 @@ export class ProposalComparatorComponent {
   addOffer(): void { this.offers.update(items => [...items, newProposal()]); }
   removeOffer(index: number): void { if (this.offers().length > 2) this.offers.update(items => items.filter((_, i) => i !== index)); }
   rate(value: number | null): string { return value === null ? '—' : `${value.toLocaleString('pt-BR', { maximumFractionDigits: 3 })}%`; }
+  interestEstimate(offer: Proposal): number { return Math.max(0,(offer.installments??0)*(offer.installmentValue??0)-Math.max(0,(offer.amount??0)-(offer.downPayment??0))); }
+  cetAnnual(offer: Proposal): string {
+    if (offer.cet !== null) return `${offer.cet.toLocaleString('pt-BR',{maximumFractionDigits:3})}% a.a. (informado)`;
+    if (offer.monthlyRate === null || offer.installments === null || offer.installmentValue === null || !offer.amount) return 'Não informado';
+    const net=offer.amount-(offer.chargesIncluded?0:(offer.iof??0)+(offer.fees??0)+(offer.insurance??0)+(offer.otherCharges??0)); if(net<=0)return 'Não estimável';
+    let low=-0.99,high=10;for(let i=0;i<100;i++){const mid=(low+high)/2;const pv=mid===0?offer.installmentValue*offer.installments:offer.installmentValue*(1-Math.pow(1+mid,-offer.installments))/mid;if(pv>net)low=mid;else high=mid;}
+    return `${((Math.pow(1+(low+high)/2,12)-1)*100).toLocaleString('pt-BR',{maximumFractionDigits:3})}% a.a. (estimativa)`;
+  }
   barWidth(total: number): number { const max = this.maximumTotal(); return max === 0 ? 0 : Math.max(2, total / max * 100); }
 
   private isInvalid(offer: Proposal): boolean {

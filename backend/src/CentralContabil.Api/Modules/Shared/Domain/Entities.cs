@@ -155,6 +155,16 @@ public sealed class CalculationRun : Entity
     public DateTimeOffset CalculatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
 
+public sealed class SavedSimulation : Entity
+{
+    public Guid UserId { get; set; }
+    public required string Title { get; set; }
+    public required string Slug { get; set; }
+    public required string InputJson { get; set; }
+    public required string ResultJson { get; set; }
+    public DateTimeOffset SavedAt { get; set; } = DateTimeOffset.UtcNow;
+}
+
 public sealed class Favorite : Entity
 {
     public Guid UserId { get; set; }

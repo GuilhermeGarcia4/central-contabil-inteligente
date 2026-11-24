@@ -21,6 +21,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CalculationRuleSet> CalculationRuleSets => Set<CalculationRuleSet>();
     public DbSet<RuleParameter> RuleParameters => Set<RuleParameter>();
     public DbSet<CalculationRun> CalculationRuns => Set<CalculationRun>();
+    public DbSet<SavedSimulation> SavedSimulations => Set<SavedSimulation>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<PrivacyConsent> PrivacyConsents => Set<PrivacyConsent>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
@@ -69,6 +70,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<AuditLog>().Property(x => x.NewValues).HasColumnType("jsonb");
         builder.Entity<CalculationRun>().Property(x => x.InputJson).HasColumnType("jsonb");
         builder.Entity<CalculationRun>().Property(x => x.ResultJson).HasColumnType("jsonb");
+        builder.Entity<SavedSimulation>().Property(x => x.InputJson).HasColumnType("jsonb");
+        builder.Entity<SavedSimulation>().Property(x => x.ResultJson).HasColumnType("jsonb");
+        builder.Entity<SavedSimulation>().Property(x => x.Title).HasMaxLength(120);
+        builder.Entity<SavedSimulation>().Property(x => x.Slug).HasMaxLength(60);
+        builder.Entity<SavedSimulation>().HasIndex(x => new { x.UserId, x.SavedAt });
+        builder.Entity<SavedSimulation>().HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         builder.Entity<ExternalProvider>().HasIndex(x => x.Name).IsUnique();
         builder.Entity<ExternalEntitySnapshot>().HasIndex(x => new { x.Provider, x.EntityType, x.ExternalKey }).IsUnique();
         builder.Entity<ExternalEntitySnapshot>().HasIndex(x => x.ExpiresAt);
