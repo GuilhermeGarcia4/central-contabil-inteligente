@@ -3,6 +3,7 @@ using CentralContabil.Api.Modules.Calculators.Application;
 using CentralContabil.Api.Modules.Identity.Application;
 using CentralContabil.Api.Modules.Rules.Application;
 using CentralContabil.Api.Modules.Shared.Domain;
+using CentralContabil.Api.Modules.Integrations.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -121,9 +122,14 @@ public static class ApiEndpoints
     private static void MapPublic(RouteGroupBuilder api)
     {
         api.MapGet("/categories", async (AppDbContext db, CancellationToken ct) => Results.Ok(await db.Categories.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).Select(x => new { x.Id, x.Name, x.Slug, x.Description }).ToListAsync(ct))).WithTags("Content");
+        api.MapGet("/market-rates/personal-credit", async (BacenCreditRateProvider provider, CancellationToken ct) => {
+            try { return Results.Ok(await provider.GetPersonalCreditReferenceAsync(ct)); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (Exception) { return Results.Problem(statusCode: 503, title: "Referência do Banco Central indisponível", detail: "Tente novamente mais tarde ou consulte diretamente a fonte oficial."); }
+        }).WithTags("Market data").RequireRateLimiting("public");
         api.MapGet("/articles", async (AppDbContext db, CancellationToken ct) => Results.Ok(await db.Articles.AsNoTracking().Where(x => x.Status == ArticleStatus.Published).OrderByDescending(x => x.PublishedAt).Select(x => new { x.Id, x.Title, x.Slug, x.Summary, category = x.Category.Name, x.PublishedAt, x.NeedsReviewAt }).ToListAsync(ct))).WithTags("Content");
         api.MapGet("/articles/{slug}", async (string slug, AppDbContext db, CancellationToken ct) => {
-            var item = await db.Articles.AsNoTracking().Where(x => x.Slug == slug && x.Status == ArticleStatus.Published).Select(x => new { x.Id, x.Title, x.Slug, x.Summary, x.SimpleContent, x.TechnicalContent, category = x.Category.Name, x.PublishedAt, x.ContentVersion, sources = x.ArticleSources.Select(s => new { s.Source.Name, s.Source.Url, s.Source.IsOfficial }) }).FirstOrDefaultAsync(ct);
+            var item = await db.Articles.AsNoTracking().Where(x => x.Slug == slug && x.Status == ArticleStatus.Published).Select(x => new { x.Id, x.Title, x.Slug, x.Summary, x.SimpleContent, x.TechnicalContent, category = x.Category.Name, x.PublishedAt, x.LastReviewedAt, x.ContentVersion, sources = x.ArticleSources.Select(s => new { s.Source.Name, s.Source.Url, s.Source.IsOfficial, s.Source.LastVerifiedAt }) }).FirstOrDefaultAsync(ct);
             return item is null ? Results.NotFound() : Results.Ok(item);
         }).WithTags("Content");
         api.MapGet("/calculators", async (AppDbContext db, CancellationToken ct) => Results.Ok(await db.Calculators.AsNoTracking().Where(x => x.IsActive).Select(x => new { x.Id, x.Name, x.Slug, x.Description, x.Category }).ToListAsync(ct))).WithTags("Calculators");
@@ -141,6 +147,11 @@ public static class ApiEndpoints
     {
         var group = api.MapGroup("/calculations").WithTags("Calculations");
         group.MapPost("/compound-interest", (CompoundInterestInput body, HttpContext h, IRuleSetSelector selector, IEnumerable<IFinancialCalculator> calculators, AppDbContext db, CancellationToken ct) => Run("juros-compostos", body, h, selector, calculators, db, ct));
+        group.MapPost("/financial-tools/{slug}", (string slug, Dictionary<string, decimal> body, FinancialToolsCalculator calculator) => {
+            try { return Results.Ok(calculator.Calculate(slug, body)); }
+            catch (KeyNotFoundException) { return Results.NotFound(new { message = "Calculadora não encontrada." }); }
+            catch (ArgumentOutOfRangeException ex) { return Results.ValidationProblem(new Dictionary<string, string[]> { [ex.ParamName ?? "entrada"] = [ex.Message] }); }
+        }).WithTags("Financial tools").RequireRateLimiting("public");
         group.MapPost("/vacation", (VacationInput body, HttpContext h, IRuleSetSelector selector, IEnumerable<IFinancialCalculator> calculators, AppDbContext db, CancellationToken ct) => Run("ferias", body, h, selector, calculators, db, ct));
         group.MapPost("/thirteenth-salary", (ThirteenthSalaryInput body, HttpContext h, IRuleSetSelector selector, IEnumerable<IFinancialCalculator> calculators, AppDbContext db, CancellationToken ct) => Run("decimo-terceiro", body, h, selector, calculators, db, ct));
     }

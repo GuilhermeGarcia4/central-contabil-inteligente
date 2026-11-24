@@ -10,6 +10,7 @@ describe('public routes', () => {
     expect(routes.some(route => route.path === 'buscar')).toBe(true);
     expect(routes.some(route => route.path === 'novidades')).toBe(true);
     expect(routes.some(route => route.path === 'assistente')).toBe(true);
+    expect(routes.some(route => route.path === 'educacao-financeira')).toBe(true);
   });
 
   it('protects account and admin routes', () => {

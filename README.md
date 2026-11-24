@@ -13,6 +13,17 @@ Veja [arquitetura](docs/ARCHITECTURE.md), [integrações V2](docs/V2-INTEGRATION
 Veja também [arquitetura de IA e Knowledge](docs/AI_ARCHITECTURE.md).
 Veja o [módulo de Controle Financeiro Pessoal](docs/PERSONAL_FINANCE.md) da V4.
 
+## Educação financeira
+
+- `/educacao-financeira`: biblioteca de artigos e acesso às ferramentas educativas.
+- `/calculadoras`: central com calculadoras de juros, financiamentos, investimentos, organização financeira e dívidas; cada simulação explica fórmula e premissas.
+- `/calculadoras/:slug`: formulário da simulação, resumo e tabela de amortização em SAC/Price, com opção de imprimir ou salvar como PDF pelo navegador.
+- `/comparador-propostas`: comparação manual de propostas, calculando total desembolsado com entrada, parcelas e encargos fora das parcelas.
+- `POST /api/v1/calculations/financial-tools/{slug}`: cálculos públicos do catálogo com validação de entradas, versão de fórmula e sem persistir valores da simulação.
+- `GET /api/v1/market-rates/personal-credit`: referência de taxa média anual do crédito pessoal livre (série SGS 20748 do Banco Central), atualizada conforme a periodicidade mensal publicada e armazenada em cache por até seis horas.
+
+As propostas são mantidas somente na memória da página e não são enviadas à API. A taxa média do Banco Central serve apenas como referência de mercado; não equivale a oferta individual. Conexão Open Finance para buscar propostas requer participação de instituições e consentimento do titular e não está habilitada neste projeto.
+
 ## Pré-requisitos e configuração
 
 - .NET SDK 10
@@ -64,6 +75,7 @@ Reinicie a API depois de configurar. O frontend habilita o botão automaticament
 
 ## Rotas da interface V2
 
+- `/educacao-financeira`: central pública de artigos com pesquisa e filtro por categoria; reúne 19 guias de educação financeira com revisão e fontes oficiais;
 - `/buscar`: busca universal com intenção e abas;
 - `/empresas` e `/empresas/:cnpj`: CNPJ numérico ou alfanumérico;
 - `/ncm`: busca por código ou descrição;

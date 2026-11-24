@@ -60,6 +60,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(o => { o.Password.RequiredLeng
     .AddRoles<IdentityRole<Guid>>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 builder.Services.AddScoped<IdentityStructuralSeed>();
 builder.Services.AddScoped<ReferenceDataSeed>();
+builder.Services.AddScoped<FinancialEducationSeed>();
 var authentication = builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -153,6 +154,7 @@ builder.Services.AddScoped<AnnualReportService>();
 builder.Services.AddScoped<FinanceInsightService>();
 builder.Services.AddScoped<FinanceOverviewService>();
 builder.Services.AddScoped<FinancialAlertService>();
+builder.Services.AddScoped<FinancialToolsCalculator>();
 builder.Services.AddScoped<FinancialDuplicateDetectionService>();
 builder.Services.AddScoped<FinancialImportService>();
 builder.Services.AddScoped<UserPreferenceService>();
@@ -175,6 +177,7 @@ builder.Services.AddHttpClient<ChamberLegislationProvider>((services, client) =>
     services.GetRequiredService<IConfiguration>()["Integrations:Chamber:BaseUrl"] ?? "https://dadosabertos.camara.leg.br/api/v2/"));
 builder.Services.AddHttpClient<SenateLegislationProvider>((services, client) => ConfigureExternalClient(client,
     services.GetRequiredService<IConfiguration>()["Integrations:Senate:BaseUrl"] ?? "https://legis.senado.leg.br/"));
+builder.Services.AddHttpClient<BacenCreditRateProvider>(client => client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddScoped<ICompanyDataProvider>(sp => sp.GetRequiredService<BrasilApiCompanyProvider>());
 builder.Services.AddScoped<ICompanyDataProvider>(sp => sp.GetRequiredService<CnpjWsCompanyProvider>());
 builder.Services.AddScoped<INcmDataProvider>(sp => sp.GetRequiredService<BrasilApiNcmProvider>());
@@ -213,6 +216,9 @@ using (var scope = app.Services.CreateScope())
 
     var referenceDataSeed = scope.ServiceProvider.GetRequiredService<ReferenceDataSeed>();
     await referenceDataSeed.SeedAsync();
+
+    var financialEducationSeed = scope.ServiceProvider.GetRequiredService<FinancialEducationSeed>();
+    await financialEducationSeed.SeedAsync();
 }
 if (app.Environment.IsDevelopment())
     await DevelopmentSeed.ApplyAsync(app.Services, app.Configuration);
