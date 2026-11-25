@@ -63,6 +63,8 @@ public sealed class V2ApiTests
         private readonly Dictionary<string, object> _items = [];
         public Task<T?> GetAsync<T>(string provider, string entityType, string externalKey, CancellationToken cancellationToken) =>
             Task.FromResult(_items.TryGetValue($"{provider}:{entityType}:{externalKey}", out var value) ? (T?)value : default);
+        public Task<T?> GetStaleAsync<T>(string provider, string entityType, string externalKey, CancellationToken cancellationToken) =>
+            Task.FromResult(_items.TryGetValue($"{provider}:{entityType}:{externalKey}", out var value) ? (T?)value : default);
         public Task SetAsync<T>(string provider, string entityType, string externalKey, T value, TimeSpan timeToLive, CancellationToken cancellationToken)
         {
             _items[$"{provider}:{entityType}:{externalKey}"] = value!;

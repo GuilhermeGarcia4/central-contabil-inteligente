@@ -7,6 +7,7 @@
     "start": "ng serve --host localhost --port 4200",
     "prebuild": "node scripts/write-runtime-config.mjs",
     "build": "ng build",
+    "pretest": "node scripts/check-finance-assets.mjs",
     "test": "ng test --watch=false"
   },
   "dependencies": {

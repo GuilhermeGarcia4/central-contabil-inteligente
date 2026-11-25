@@ -12,6 +12,7 @@ using CentralContabil.Api.Modules.Knowledge.Infrastructure;
 using CentralContabil.Api.Modules.AI.Application;
 using CentralContabil.Api.Modules.AI.Infrastructure;
 using CentralContabil.Api.Modules.Finance.Application;
+using CentralContabil.Api.Modules.Journal.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -123,6 +124,13 @@ builder.Services.AddScoped<IExternalSnapshotCache, ExternalSnapshotCache>();
 builder.Services.AddScoped<CompanyLookupService>();
 builder.Services.AddScoped<NcmLookupService>();
 builder.Services.AddScoped<UnifiedSearchService>();
+builder.Services.AddScoped<JournalNewsService>();
+builder.Services.AddHttpClient("journal-feed", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(8);
+    client.DefaultRequestHeaders.Accept.ParseAdd("application/rss+xml, application/atom+xml, application/xml, text/xml");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("CentralContabilInteligente/2.0 (+https://github.com/GuilhermeGarcia4/central-contabil-inteligente)");
+});
 builder.Services.AddSingleton<KnowledgeChunker>();
 builder.Services.AddSingleton<LocalEmbeddingService>();
 builder.Services.AddSingleton<OpenAiEmbeddingProvider>();
@@ -207,7 +215,7 @@ app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
         ? Results.Ok(new { status = "healthy", database = "connected", utc = DateTimeOffset.UtcNow })
         : Results.Json(new { status = "unhealthy", database = "disconnected", utc = DateTimeOffset.UtcNow }, statusCode: StatusCodes.Status503ServiceUnavailable);
 }).AllowAnonymous();
-app.MapApi(); app.MapV2Api(); app.MapV3Api(); app.MapFinanceApi(); app.MapFinanceV5Api(); app.MapFinanceV6Api(); app.MapFinanceV7Api(); app.MapFinanceV8Api();
+app.MapApi(); app.MapV2Api(); app.MapV3Api(); app.MapJournalApi(); app.MapFinanceApi(); app.MapFinanceV5Api(); app.MapFinanceV6Api(); app.MapFinanceV7Api(); app.MapFinanceV8Api();
 await DatabaseMigration.ApplyAsync(app.Services);
 using (var scope = app.Services.CreateScope())
 {

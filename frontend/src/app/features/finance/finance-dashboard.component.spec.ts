@@ -42,6 +42,20 @@ describe('FinanceDashboardComponent V8', () => {
     expect(component.error()).toContain('Visão Geral');
   });
 
+  it('limpa dados antigos enquanto outro período carrega', () => {
+    const first = new Subject<FinanceOverview>();
+    const second = new Subject<FinanceOverview>();
+    let calls = 0;
+    const { component } = create(() => ++calls === 1 ? first : second);
+    first.next(emptyOverview);
+    expect(component.overview()).toBe(emptyOverview);
+    component.selectPreset('previous');
+    expect(component.loading()).toBe(true);
+    expect(component.overview()).toBeNull();
+    second.next(emptyOverview);
+    expect(component.loading()).toBe(false);
+  });
+
   it('recarrega todos os dados ao trocar período', () => {
     const { component, finance } = create(() => of(emptyOverview));
     component.selectPreset('previous');

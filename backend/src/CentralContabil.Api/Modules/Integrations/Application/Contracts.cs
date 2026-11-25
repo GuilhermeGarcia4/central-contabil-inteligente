@@ -27,6 +27,7 @@ public interface ILegislationProvider
 public interface IExternalSnapshotCache
 {
     Task<T?> GetAsync<T>(string provider, string entityType, string externalKey, CancellationToken cancellationToken);
+    Task<T?> GetStaleAsync<T>(string provider, string entityType, string externalKey, CancellationToken cancellationToken);
     Task SetAsync<T>(string provider, string entityType, string externalKey, T value, TimeSpan timeToLive, CancellationToken cancellationToken);
 }
 

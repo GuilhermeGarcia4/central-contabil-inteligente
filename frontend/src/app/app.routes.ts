@@ -28,6 +28,7 @@ export const routes: Routes = [
   { path: 'empresas', loadComponent: () => import('./features/companies/company.component').then(m => m.CompanyComponent), title: 'Empresas e CNPJ' },
   { path: 'ncm', loadComponent: () => import('./features/ncm/ncm.component').then(m => m.NcmComponent), title: 'Consulta NCM' },
   { path: 'novidades', loadComponent: () => import('./features/updates/updates.component').then(m => m.UpdatesComponent), title: 'Novidades' },
+  { path: 'jornal-contabil', loadComponent: () => import('./features/journal/journal-page.component').then(m => m.JournalPageComponent), title: 'Jornal Contábil' },
   { path: 'artigos/:slug', loadComponent: () => import('./features/articles/article.component').then(m => m.ArticleComponent) },
   { path: 'calculadoras/:slug', loadComponent: () => import('./features/calculators/calculator.component').then(m => m.CalculatorComponent) },
   { path: 'entrar', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent), title: 'Entrar' },
