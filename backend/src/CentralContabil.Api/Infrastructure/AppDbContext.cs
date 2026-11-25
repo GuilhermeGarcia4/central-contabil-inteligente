@@ -3,6 +3,7 @@ using CentralContabil.Api.Modules.Integrations.Domain;
 using CentralContabil.Api.Modules.Knowledge.Domain;
 using CentralContabil.Api.Modules.AI.Domain;
 using CentralContabil.Api.Modules.Finance.Domain;
+using CentralContabil.Api.Modules.Community.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<UserPreference> UserPreferences => Set<UserPreference>();
     public DbSet<AssistantConversation> AssistantConversations => Set<AssistantConversation>();
     public DbSet<AssistantMessage> AssistantMessages => Set<AssistantMessage>();
+    public DbSet<CommunityDiscussion> CommunityDiscussions => Set<CommunityDiscussion>();
+    public DbSet<CommunityComment> CommunityComments => Set<CommunityComment>();
+    public DbSet<CommunityReport> CommunityReports => Set<CommunityReport>();
+    public DbSet<CommunityUsefulReaction> CommunityUsefulReactions => Set<CommunityUsefulReaction>();
+    public DbSet<CommunityModerationAction> CommunityModerationActions => Set<CommunityModerationAction>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -182,5 +188,32 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<AssistantMessage>().Property(x => x.Content).HasMaxLength(20000);
         builder.Entity<AssistantMessage>().Property(x => x.SourcesJson).HasMaxLength(8000);
         builder.Entity<AssistantMessage>().HasIndex(x => new { x.ConversationId, x.CreatedAt });
+        builder.Entity<CommunityDiscussion>().Property(x => x.Title).HasMaxLength(140);
+        builder.Entity<CommunityDiscussion>().Property(x => x.Content).HasMaxLength(5000);
+        builder.Entity<CommunityDiscussion>().Property(x => x.Category).HasMaxLength(40);
+        builder.Entity<CommunityDiscussion>().Property(x => x.AuthorDisplayName).HasMaxLength(80);
+        builder.Entity<CommunityDiscussion>().Property(x => x.AuthorPublicRole).HasMaxLength(20);
+        builder.Entity<CommunityDiscussion>().HasIndex(x => new { x.IsRemoved, x.Category, x.CreatedAt });
+        builder.Entity<CommunityDiscussion>().HasIndex(x => x.AuthorId);
+        builder.Entity<CommunityComment>().Property(x => x.Content).HasMaxLength(3000);
+        builder.Entity<CommunityComment>().Property(x => x.AuthorDisplayName).HasMaxLength(80);
+        builder.Entity<CommunityComment>().Property(x => x.AuthorPublicRole).HasMaxLength(20);
+        builder.Entity<CommunityComment>().HasIndex(x => new { x.DiscussionId, x.CreatedAt });
+        builder.Entity<CommunityComment>().HasIndex(x => x.AuthorId);
+        builder.Entity<CommunityComment>().HasOne<CommunityDiscussion>().WithMany().HasForeignKey(x => x.DiscussionId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<CommunityReport>().Property(x => x.Reason).HasMaxLength(40);
+        builder.Entity<CommunityReport>().Property(x => x.Details).HasMaxLength(500);
+        builder.Entity<CommunityReport>().Property(x => x.Status).HasMaxLength(20);
+        builder.Entity<CommunityReport>().HasIndex(x => new { x.Status, x.CreatedAt });
+        builder.Entity<CommunityReport>().ToTable(table => table.HasCheckConstraint("CK_CommunityReports_ExactlyOneTarget", "(\"DiscussionId\" IS NULL) <> (\"CommentId\" IS NULL)"));
+        builder.Entity<CommunityReport>().HasIndex(x => new { x.ReporterId, x.DiscussionId }).IsUnique().HasFilter("\"Status\" = 'Pending' AND \"DiscussionId\" IS NOT NULL");
+        builder.Entity<CommunityReport>().HasIndex(x => new { x.ReporterId, x.CommentId }).IsUnique().HasFilter("\"Status\" = 'Pending' AND \"CommentId\" IS NOT NULL");
+        builder.Entity<CommunityUsefulReaction>().HasKey(x => new { x.DiscussionId, x.UserId });
+        builder.Entity<CommunityUsefulReaction>().HasOne<CommunityDiscussion>().WithMany().HasForeignKey(x => x.DiscussionId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<CommunityModerationAction>().Property(x => x.TargetType).HasMaxLength(20);
+        builder.Entity<CommunityModerationAction>().Property(x => x.Action).HasMaxLength(30);
+        builder.Entity<CommunityModerationAction>().Property(x => x.ActorDisplayName).HasMaxLength(80);
+        builder.Entity<CommunityModerationAction>().Property(x => x.Reason).HasMaxLength(500);
+        builder.Entity<CommunityModerationAction>().HasIndex(x => new { x.TargetType, x.TargetId, x.CreatedAt });
     }
 }

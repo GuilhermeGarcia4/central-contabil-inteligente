@@ -7,8 +7,9 @@ public static class ApplicationRoles
 {
     public const string User = "User";
     public const string Admin = "Admin";
+    public const string Moderator = "Moderator";
 
-    public static readonly IReadOnlyList<string> Required = [User, Admin];
+    public static readonly IReadOnlyList<string> Required = [User, Admin, Moderator];
 }
 
 public sealed class IdentityStructuralSeed(

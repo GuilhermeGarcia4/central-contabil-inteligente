@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, adminGuard } from './core/guards/auth.guard';
+import { authGuard, adminGuard, communityModeratorGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'minha-conta/financas/simulacoes', canActivate: [authGuard], loadComponent: () => import('./features/finance/simulation-history.component').then(m => m.SimulationHistoryComponent), title: 'Simulações salvas' },
@@ -29,6 +29,9 @@ export const routes: Routes = [
   { path: 'ncm', loadComponent: () => import('./features/ncm/ncm.component').then(m => m.NcmComponent), title: 'Consulta NCM' },
   { path: 'novidades', loadComponent: () => import('./features/updates/updates.component').then(m => m.UpdatesComponent), title: 'Novidades' },
   { path: 'jornal-contabil', loadComponent: () => import('./features/journal/journal-page.component').then(m => m.JournalPageComponent), title: 'Jornal Contábil' },
+  { path: 'comunidade/moderacao', canActivate: [communityModeratorGuard], loadComponent: () => import('./features/community/community.component').then(m => m.CommunityComponent), data: { mode: 'moderation' }, title: 'Moderação da comunidade' },
+  { path: 'comunidade/:id', loadComponent: () => import('./features/community/community.component').then(m => m.CommunityComponent), title: 'Discussão da comunidade' },
+  { path: 'comunidade', loadComponent: () => import('./features/community/community.component').then(m => m.CommunityComponent), title: 'Comunidade' },
   { path: 'artigos/:slug', loadComponent: () => import('./features/articles/article.component').then(m => m.ArticleComponent) },
   { path: 'calculadoras/:slug', loadComponent: () => import('./features/calculators/calculator.component').then(m => m.CalculatorComponent) },
   { path: 'entrar', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent), title: 'Entrar' },

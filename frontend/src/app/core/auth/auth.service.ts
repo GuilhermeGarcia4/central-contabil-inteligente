@@ -8,7 +8,7 @@ interface LoginResult { accessToken:string; expiresAt:string; user:User }
 interface GoogleStatus { enabled:boolean; callbackUrl:string|null }
 @Injectable({providedIn:'root'}) export class AuthService {
   private readonly http=inject(HttpClient); private readonly router=inject(Router); private accessToken:string|null=null; private restorePromise:Promise<void>|null=null; private stateVersion=0;
-  readonly user=signal<User|null>(null); readonly roles=signal<string[]>([]); readonly isAdmin=computed(()=>this.roles().includes('Admin'));
+  readonly user=signal<User|null>(null); readonly roles=signal<string[]>([]); readonly isAdmin=computed(()=>this.roles().includes('Admin')); readonly isCommunityModerator=computed(()=>this.isAdmin()||this.roles().includes('Moderator'));
   token(){return this.accessToken}
   login(email:string,password:string){return this.http.post<LoginResult>('/api/v1/auth/login',{email,password},{withCredentials:true})}
   accept(result:LoginResult){this.stateVersion++;this.accessToken=result.accessToken;this.user.set(result.user);this.roles.set(this.readRoles(result.accessToken))}

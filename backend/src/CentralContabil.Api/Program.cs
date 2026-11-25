@@ -13,6 +13,7 @@ using CentralContabil.Api.Modules.AI.Application;
 using CentralContabil.Api.Modules.AI.Infrastructure;
 using CentralContabil.Api.Modules.Finance.Application;
 using CentralContabil.Api.Modules.Journal.Application;
+using CentralContabil.Api.Modules.Community.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -102,7 +103,11 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
         };
     });
 }
-builder.Services.AddAuthorization(o => o.AddPolicy("AdminOnly", p => p.RequireRole(ApplicationRoles.Admin)));
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("AdminOnly", p => p.RequireRole(ApplicationRoles.Admin));
+    o.AddPolicy("CommunityModerators", p => p.RequireRole(ApplicationRoles.Admin, ApplicationRoles.Moderator));
+});
 builder.Services.AddCors(o => o.AddPolicy("web", p => p.WithOrigins(builder.Configuration["FRONTEND_ORIGIN"] ?? builder.Configuration["FrontendOrigin"] ?? "http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddRateLimiter(options =>
 {
@@ -115,6 +120,12 @@ builder.Services.AddRateLimiter(options =>
         var limit = context.User.IsInRole(ApplicationRoles.Admin) ? 30 : context.User.Identity?.IsAuthenticated == true ? 15 : 5;
         return RateLimitPartition.GetFixedWindowLimiter(identity, _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 });
     });
+    options.AddPolicy("community-write", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 12, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.AddPolicy("community-report", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(5), QueueLimit = 0 }));
 });
 builder.Services.AddScoped<TokenService>(); builder.Services.AddScoped<IRuleSetSelector, RuleSetSelector>();
 builder.Services.AddScoped<IFinancialCalculator, CompoundInterestCalculator>(); builder.Services.AddScoped<IFinancialCalculator, VacationCalculator>(); builder.Services.AddScoped<IFinancialCalculator, ThirteenthSalaryCalculator>();
@@ -125,6 +136,7 @@ builder.Services.AddScoped<CompanyLookupService>();
 builder.Services.AddScoped<NcmLookupService>();
 builder.Services.AddScoped<UnifiedSearchService>();
 builder.Services.AddScoped<JournalNewsService>();
+builder.Services.AddScoped<CommunityService>();
 builder.Services.AddHttpClient("journal-feed", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(8);
@@ -215,7 +227,7 @@ app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
         ? Results.Ok(new { status = "healthy", database = "connected", utc = DateTimeOffset.UtcNow })
         : Results.Json(new { status = "unhealthy", database = "disconnected", utc = DateTimeOffset.UtcNow }, statusCode: StatusCodes.Status503ServiceUnavailable);
 }).AllowAnonymous();
-app.MapApi(); app.MapV2Api(); app.MapV3Api(); app.MapJournalApi(); app.MapFinanceApi(); app.MapFinanceV5Api(); app.MapFinanceV6Api(); app.MapFinanceV7Api(); app.MapFinanceV8Api();
+app.MapApi(); app.MapV2Api(); app.MapV3Api(); app.MapJournalApi(); app.MapCommunityApi(); app.MapFinanceApi(); app.MapFinanceV5Api(); app.MapFinanceV6Api(); app.MapFinanceV7Api(); app.MapFinanceV8Api();
 await DatabaseMigration.ApplyAsync(app.Services);
 using (var scope = app.Services.CreateScope())
 {

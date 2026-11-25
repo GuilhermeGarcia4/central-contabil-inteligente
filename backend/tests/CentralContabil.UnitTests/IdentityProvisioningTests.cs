@@ -19,9 +19,11 @@ public sealed class IdentityProvisioningTests
         var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         Assert.True(await roles.RoleExistsAsync(ApplicationRoles.User));
         Assert.True(await roles.RoleExistsAsync(ApplicationRoles.Admin));
-        Assert.Equal(2, await roles.Roles.CountAsync());
+        Assert.True(await roles.RoleExistsAsync(ApplicationRoles.Moderator));
+        Assert.Equal(3, await roles.Roles.CountAsync());
         Assert.Equal("USER", (await roles.FindByNameAsync(ApplicationRoles.User))!.NormalizedName);
         Assert.Equal("ADMIN", (await roles.FindByNameAsync(ApplicationRoles.Admin))!.NormalizedName);
+        Assert.Equal("MODERATOR", (await roles.FindByNameAsync(ApplicationRoles.Moderator))!.NormalizedName);
     }
 
     [Fact]
@@ -40,6 +42,7 @@ public sealed class IdentityProvisioningTests
         var db = verificationScope.ServiceProvider.GetRequiredService<AppDbContext>();
         Assert.Single(await db.Roles.Where(role => role.NormalizedName == "USER").ToListAsync());
         Assert.Single(await db.Roles.Where(role => role.NormalizedName == "ADMIN").ToListAsync());
+        Assert.Single(await db.Roles.Where(role => role.NormalizedName == "MODERATOR").ToListAsync());
     }
 
     [Fact]
@@ -53,7 +56,7 @@ public sealed class IdentityProvisioningTests
 
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Assert.Equal(2, await db.Roles.CountAsync());
+        Assert.Equal(3, await db.Roles.CountAsync());
     }
 
     [Fact]
